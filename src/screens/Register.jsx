@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Font from 'expo-font';
-import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import { useContext, useEffect, useState } from 'react';
 import {
   Alert,
@@ -12,7 +13,7 @@ import {
   View,
 } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
-import { auth } from '../services/firebase';
+import { auth, db } from '../services/firebase';
 
 export default function Register({ navigation }) {
   const { colors } = useContext(ThemeContext);
@@ -28,14 +29,14 @@ export default function Register({ navigation }) {
   useEffect(() => {
     async function loadFont() {
       await Font.loadAsync({
-        'Panama': require('../../assets/fonts/Panama Personal Use Only.ttf'),
+        Panama: require('../../assets/fonts/Panama Personal Use Only.ttf'),
       });
       setFontsLoaded(true);
     }
     loadFont();
   }, []);
 
-  if (!fontsLoaded) return null; // splash/loading até a fonte carregar
+  if (!fontsLoaded) return null;
 
   async function handleRegister() {
     if (!fullName || !nickname || !email || !password || !confirmPassword) {
@@ -48,18 +49,15 @@ export default function Register({ navigation }) {
     }
 
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      Alert.alert('Sucesso', `Conta criada para ${nickname}!`);
-      navigation.replace('App'); // redireciona para AppNavigator
-    } catch (error) {
-      Alert.alert('Erro', error.message);
-    }
-  }
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
-  async function handleGoogleLogin() {
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      await setDoc(doc(db, 'users', userCredential.user.uid), {
+        fullName,
+        nickname,
+        email,
+      });
+
+      Alert.alert('Sucesso', `Conta criada para ${nickname}!`);
       navigation.replace('App');
     } catch (error) {
       Alert.alert('Erro', error.message);
@@ -77,6 +75,7 @@ export default function Register({ navigation }) {
         Entre no universo gamer e compartilhe seus momentos
       </Text>
 
+      {/* FORMULÁRIO */}
       <TextInput
         style={[styles.input, { backgroundColor: colors.cardBg, color: colors.textPrimary }]}
         placeholder="Nome completo"
@@ -146,16 +145,6 @@ export default function Register({ navigation }) {
         <Text style={[styles.registerText, { color: colors.buttonText }]}>Criar Conta</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={[styles.googleBtn, { borderColor: colors.textSecondary }]}
-        onPress={handleGoogleLogin}
-      >
-        <Ionicons name="logo-google" size={20} color={colors.textSecondary} />
-        <Text style={[styles.googleText, { color: colors.textSecondary }]}>
-          Continuar com Google
-        </Text>
-      </TouchableOpacity>
-
       <View style={styles.footer}>
         <Text style={{ color: colors.textSecondary }}>Já tem uma conta?</Text>
         <TouchableOpacity onPress={() => navigation.navigate('Login')}>
@@ -215,17 +204,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 5,
   },
-  registerText: { fontSize: 16, fontWeight: '600', color: '#ffff'},
-  googleBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
-    width: '100%',
-    marginTop: 15,
-  },
-  googleText: { marginLeft: 8, fontSize: 16 },
+  registerText: { fontSize: 16, fontWeight: '600', color: '#ffff' },
   footer: { flexDirection: 'row', marginTop: 20 },
 });
