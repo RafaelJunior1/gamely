@@ -1,294 +1,127 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { doc, getDoc, getFirestore, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useContext, useEffect, useState } from 'react';
-import {
-  Alert,
-  FlatList,
-  Image,
-  Modal,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { AuthContext } from '../context/AuthContext';
 import { ThemeContext } from '../context/ThemeContext';
-import { auth } from '../services/firebase';
+import { db } from '../services/firebase';
 
-const db = getFirestore();
-
-const POSTS = Array.from({ length: 12 }).map((_, i) => ({
-  id: i.toString(),
-  image: ``,
-}));
-
-const GAME_AVATARS = [
-  require('https://preview.redd.it/trying-to-come-up-with-a-new-avatar-for-my-various-social-v0-8fs49e6e1lsb1.jpg?width=519&format=pjpg&auto=webp&s=220d8e08781d7078c64e3ffc25382a18a87d5c98'),
-  require('https://img.freepik.com/free-photo/cute-cat-with-computer_23-2150932174.jpg?semt=ais_hybrid&w=740&q=80'),
-  require('https://img.freepik.com/free-vector/gradient-galaxy-background_52683-140335.jpg?semt=ais_hybrid&w=740&q=80'),
-];
-
-export default function Profile() {
+export default function Profile({ navigation }) {
   const { colors } = useContext(ThemeContext);
-  const user = auth.currentUser;
+  const { user } = useContext(AuthContext);
 
   const [profile, setProfile] = useState(null);
-  const [editVisible, setEditVisible] = useState(false);
-  const [bio, setBio] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  const fetchProfile = async () => {
+    if (!user) return;
+    const docRef = doc(db, 'users', user.uid);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      setProfile(docSnap.data());
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
-    loadProfile();
-  }, []);
+    fetchProfile();
+  }, [user]);
 
-  async function loadProfile() {
-    try {
-      const ref = doc(db, 'users', user.uid);
-      const snap = await getDoc(ref);
-      if (snap.exists()) {
-        setProfile(snap.data());
-        setBio(snap.data().bio || '');
-      }
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
-  async function saveBio() {
-    try {
-      await updateDoc(doc(db, 'users', user.uid), { bio });
-      setProfile(prev => ({ ...prev, bio }));
-      setEditVisible(false);
-    } catch (e) {
-      Alert.alert('Erro', 'Não foi possível salvar');
-    }
-  }
-
-  async function pickFromGallery() {
+  const pickAvatar = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.7,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
     });
 
-    if (!result.canceled) {
-      updateAvatar(result.assets[0].uri);
-    }
-  }
+    if (!result.canceled) return;
+    const docRef = doc(db, 'users', user.uid);
+    await updateDoc(docRef, { avatar: result.assets[0].uri });
+    setProfile(prev => ({ ...prev, avatar: result.assets[0].uri }));
+  };
 
-  async function updateAvatar(uri) {
-    await updateDoc(doc(db, 'users', user.uid), { avatar: uri });
-    setProfile(prev => ({ ...prev, avatar: uri }));
-  }
-
-  if (!profile) return null;
+  if (loading) return null;
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* HEADER */}
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <TouchableOpacity>
-          <Ionicons name="settings-outline" size={24} color={colors.textPrimary} />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.profileInfo}>
-        <TouchableOpacity onPress={() => setEditVisible(true)}>
+        <TouchableOpacity onPress={pickAvatar}>
           <Image
             source={
-              profile.avatar
+              profile.avatar && profile.avatar !== 'NULL'
                 ? { uri: profile.avatar }
                 : require('../../assets/avatars/default.png')
             }
             style={styles.avatar}
           />
         </TouchableOpacity>
-
-        <Text style={[styles.nickname, { color: colors.textPrimary }]}>
-          @{profile.nickname}
-        </Text>
-
-        <Text style={[styles.bio, { color: colors.textSecondary }]}>
-          {profile.bio || 'Adicione uma biografia gamer 🎮'}
-        </Text>
-
-        <View style={styles.stats}>
-          <Stat label="Posts" value={POSTS.length} />
-          <Stat label="Seguidores" value={profile.followers || 0} />
-          <Stat label="Seguindo" value={profile.following || 0} />
+        <View style={styles.info}>
+          <Text style={[styles.name, { color: colors.textPrimary }]}>{profile.fullName}</Text>
+          <Text style={[styles.nickname, { color: colors.textSecondary }]}>@{profile.nickname}</Text>
         </View>
-
-        <TouchableOpacity
-          style={[styles.editBtn, { borderColor: colors.buttonBg }]}
-          onPress={() => setEditVisible(true)}
-        >
-          <Text style={{ color: colors.buttonBg }}>Editar Perfil</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('EditProfile')}>
+          <Ionicons name="create-outline" size={28} color={colors.textPrimary} />
         </TouchableOpacity>
       </View>
 
-      <FlatList
-        data={POSTS}
-        numColumns={3}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <Image source={{ uri: item.image }} style={styles.postImage} />
-        )}
-      />
-
-      <Modal visible={editVisible} transparent animationType="slide">
-        <View style={styles.modal}>
-          <View style={[styles.modalContent, { backgroundColor: colors.cardBg }]}>
-            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
-              Editar Perfil
-            </Text>
-
-            <TextInput
-              placeholder="Biografia"
-              placeholderTextColor={colors.textSecondary}
-              style={[styles.input, { color: colors.textPrimary }]}
-              value={bio}
-              onChangeText={setBio}
-              multiline
-            />
-
-            <Text style={{ color: colors.textSecondary, marginTop: 10 }}>
-              Escolher avatar gamer
-            </Text>
-
-            <View style={styles.avatarRow}>
-              {GAME_AVATARS.map((a, i) => (
-                <TouchableOpacity key={i} onPress={() => updateAvatar(Image.resolveAssetSource(a).uri)}>
-                  <Image source={a} style={styles.smallAvatar} />
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <TouchableOpacity onPress={pickFromGallery} style={styles.galleryBtn}>
-              <Text style={{ color: '#fff' }}>Escolher da galeria</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={saveBio} style={styles.saveBtn}>
-              <Text style={{ color: '#fff' }}>Salvar</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => setEditVisible(false)}>
-              <Text style={{ color: colors.textSecondary, marginTop: 10 }}>Cancelar</Text>
-            </TouchableOpacity>
-          </View>
+      <View style={styles.stats}>
+        <View style={styles.statItem}>
+          <Text style={[styles.statNumber, { color: colors.textPrimary }]}>{profile.followers}</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Seguidores</Text>
         </View>
-      </Modal>
-    </View>
-  );
-}
+        <View style={styles.statItem}>
+          <Text style={[styles.statNumber, { color: colors.textPrimary }]}>{profile.following}</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Seguindo</Text>
+        </View>
+      </View>
 
-function Stat({ label, value }) {
-  return (
-    <View style={styles.stat}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
+      <View style={styles.bioContainer}>
+        <Text style={[styles.bio, { color: colors.textPrimary }]}>{profile.bio || 'Adicione uma biografia'}</Text>
+      </View>
+
+      <View style={styles.gamesContainer}>
+        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Jogos</Text>
+        {profile.games.length > 0 ? (
+          <FlatList
+            data={profile.games}
+            horizontal
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => (
+              <View style={[styles.gameItem, { backgroundColor: colors.cardBg }]}>
+                <Text style={{ color: colors.textPrimary }}>{item}</Text>
+              </View>
+            )}
+            showsHorizontalScrollIndicator={false}
+          />
+        ) : (
+          <Text style={{ color: colors.textSecondary }}>Nenhum jogo adicionado</Text>
+        )}
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: {
-    padding: 16,
-    alignItems: 'flex-end',
-  },
-  profileInfo: {
-    alignItems: 'center',
-    paddingBottom: 20,
-  },
-  avatar: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    borderWidth: 3,
-    borderColor: '#7C4DFF',
-  },
-  nickname: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginTop: 8,
-  },
-  bio: {
-    fontSize: 14,
-    marginTop: 6,
-    textAlign: 'center',
-    paddingHorizontal: 20,
-  },
-  stats: {
-    flexDirection: 'row',
-    marginTop: 15,
-  },
-  stat: {
-    alignItems: 'center',
-    marginHorizontal: 15,
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  statLabel: {
-    fontSize: 13,
-    color: '#aaa',
-  },
-  editBtn: {
-    marginTop: 15,
-    borderWidth: 1,
+  container: { flex: 1, padding: 20 },
+  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
+  avatar: { width: 80, height: 80, borderRadius: 40, marginRight: 15 },
+  info: { flex: 1 },
+  name: { fontSize: 20, fontWeight: '700' },
+  nickname: { fontSize: 16 },
+  stats: { flexDirection: 'row', justifyContent: 'space-around', marginVertical: 15 },
+  statItem: { alignItems: 'center' },
+  statNumber: { fontSize: 18, fontWeight: '700' },
+  statLabel: { fontSize: 14 },
+  bioContainer: { marginBottom: 20 },
+  bio: { fontSize: 16 },
+  gamesContainer: { marginBottom: 20 },
+  sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: 10 },
+  gameItem: {
     paddingVertical: 8,
-    paddingHorizontal: 30,
+    paddingHorizontal: 15,
     borderRadius: 20,
-  },
-  postImage: {
-    width: '33.33%',
-    height: 120,
-  },
-  modal: {
-    flex: 1,
-    backgroundColor: '#000000aa',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  modalContent: {
-    borderRadius: 14,
-    padding: 20,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 10,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#555',
-    borderRadius: 10,
-    padding: 10,
-    minHeight: 60,
-  },
-  avatarRow: {
-    flexDirection: 'row',
-    marginVertical: 10,
-  },
-  smallAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
     marginRight: 10,
-  },
-  galleryBtn: {
-    backgroundColor: '#555',
-    padding: 10,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  saveBtn: {
-    backgroundColor: '#7C4DFF',
-    padding: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 10,
   },
 });

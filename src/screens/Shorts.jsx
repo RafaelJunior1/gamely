@@ -13,8 +13,8 @@ const shortsData = [
   {
     id: '1',
     user: 'ShadowGamer',
-    avatar: 'https://i.pravatar.cc/150?img=12',
-    video: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4',
+    avatar: '../../assets/avatars/avatar1.png',
+    video: '../../assets/videos/Minecraft RTX_ What if ~85 NOPE NOPE NOPE #Shorts.mp4',
     likes: 245,
     comments: 32,
     shares: 14,
@@ -24,8 +24,8 @@ const shortsData = [
   {
     id: '2',
     user: 'PixelQueen',
-    avatar: 'https://i.pravatar.cc/150?img=5',
-    video: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4',
+    avatar: '../../assets/avatars/avatar2.png',
+    video: '../../assets/videos/Minecraft RTX_ What if ~85 NOPE NOPE NOPE #Shorts.mp4',
     likes: 312,
     comments: 45,
     shares: 20,

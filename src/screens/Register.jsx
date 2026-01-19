@@ -1,22 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Font from 'expo-font';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { useContext, useEffect, useState } from 'react';
-import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { AuthContext } from '../context/AuthContext';
 import { ThemeContext } from '../context/ThemeContext';
 import { auth, db } from '../services/firebase';
 
 export default function Register({ navigation }) {
   const { colors } = useContext(ThemeContext);
+  const { user } = useContext(AuthContext);
 
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [fullName, setFullName] = useState('');
@@ -28,9 +22,7 @@ export default function Register({ navigation }) {
 
   useEffect(() => {
     async function loadFont() {
-      await Font.loadAsync({
-        Panama: require('../../assets/fonts/Panama Personal Use Only.ttf'),
-      });
+      await Font.loadAsync({ Panama: require('../../assets/fonts/Panama Personal Use Only.ttf') });
       setFontsLoaded(true);
     }
     loadFont();
@@ -55,27 +47,26 @@ export default function Register({ navigation }) {
         fullName,
         nickname,
         email,
+        avatar: null,
+        bio: '',
+        followers: 0,
+        following: 0,
+        games: [],
+        posts: 0,
+        createdAt: serverTimestamp(),
       });
 
-      Alert.alert('Sucesso', `Conta criada para ${nickname}!`);
-      navigation.replace('App');
+      navigation.replace('App'); // entra direto no app
     } catch (error) {
       Alert.alert('Erro', error.message);
     }
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}
-      keyboardShouldPersistTaps="handled"
-    >
-      {/* LOGO */}
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]} keyboardShouldPersistTaps="handled">
       <Text style={[styles.logo, { color: colors.buttonBg }]}>GAMELY</Text>
-      <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-        Entre no universo gamer e compartilhe seus momentos
-      </Text>
+      <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Entre no universo gamer e compartilhe seus momentos</Text>
 
-      {/* FORMULÁRIO */}
       <TextInput
         style={[styles.input, { backgroundColor: colors.cardBg, color: colors.textPrimary }]}
         placeholder="Nome completo"
@@ -83,7 +74,6 @@ export default function Register({ navigation }) {
         value={fullName}
         onChangeText={setFullName}
       />
-
       <TextInput
         style={[styles.input, { backgroundColor: colors.cardBg, color: colors.textPrimary }]}
         placeholder="Nickname gamer"
@@ -91,7 +81,6 @@ export default function Register({ navigation }) {
         value={nickname}
         onChangeText={setNickname}
       />
-
       <TextInput
         style={[styles.input, { backgroundColor: colors.cardBg, color: colors.textPrimary }]}
         placeholder="Email"
@@ -101,7 +90,6 @@ export default function Register({ navigation }) {
         keyboardType="email-address"
         autoCapitalize="none"
       />
-
       <View style={[styles.passwordContainer, { backgroundColor: colors.cardBg }]}>
         <TextInput
           style={[styles.passwordInput, { color: colors.textPrimary }]}
@@ -112,14 +100,9 @@ export default function Register({ navigation }) {
           secureTextEntry={!showPassword}
         />
         <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-          <Ionicons
-            name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-            size={24}
-            color={colors.textSecondary}
-          />
+          <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={24} color={colors.textSecondary} />
         </TouchableOpacity>
       </View>
-
       <View style={[styles.passwordContainer, { backgroundColor: colors.cardBg }]}>
         <TextInput
           style={[styles.passwordInput, { color: colors.textPrimary }]}
@@ -130,18 +113,11 @@ export default function Register({ navigation }) {
           secureTextEntry={!showPassword}
         />
         <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-          <Ionicons
-            name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-            size={24}
-            color={colors.textSecondary}
-          />
+          <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={24} color={colors.textSecondary} />
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity
-        style={[styles.registerBtn, { backgroundColor: colors.buttonBg }]}
-        onPress={handleRegister}
-      >
+      <TouchableOpacity style={[styles.registerBtn, { backgroundColor: colors.buttonBg }]} onPress={handleRegister}>
         <Text style={[styles.registerText, { color: colors.buttonText }]}>Criar Conta</Text>
       </TouchableOpacity>
 
@@ -156,54 +132,13 @@ export default function Register({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    alignItems: 'center',
-    padding: 20,
-    paddingTop: 60,
-  },
-  logo: {
-    fontFamily: 'Panama',
-    fontSize: 42,
-    color: '#7C4DFF',
-    marginBottom: 6,
-    letterSpacing: 2,
-    lineHeight: 50,
-  },
-  subtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 30,
-  },
-  input: {
-    width: '100%',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 12,
-    fontSize: 16,
-  },
-  passwordContainer: {
-    width: '100%',
-    flexDirection: 'row',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 12,
-    alignItems: 'center',
-  },
+  container: { flexGrow: 1, alignItems: 'center', padding: 20, paddingTop: 60 },
+  logo: { fontFamily: 'Panama', fontSize: 42, marginBottom: 6, letterSpacing: 2, lineHeight: 50 },
+  subtitle: { fontSize: 16, textAlign: 'center', marginBottom: 30 },
+  input: { width: '100%', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 12, fontSize: 16 },
+  passwordContainer: { width: '100%', flexDirection: 'row', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 12, alignItems: 'center' },
   passwordInput: { flex: 1, fontSize: 16 },
-  registerBtn: {
-    width: '100%',
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 10,
-    shadowColor: '#7C4DFF',
-    shadowOpacity: 0.5,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  registerText: { fontSize: 16, fontWeight: '600', color: '#ffff' },
+  registerBtn: { width: '100%', paddingVertical: 14, borderRadius: 12, alignItems: 'center', marginTop: 10, shadowColor: '#7C4DFF', shadowOpacity: 0.5, shadowRadius: 8, elevation: 5 },
+  registerText: { fontSize: 16, fontWeight: '600', color: '#fff' },
   footer: { flexDirection: 'row', marginTop: 20 },
 });

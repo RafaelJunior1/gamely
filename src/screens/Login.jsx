@@ -1,11 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import * as Font from 'expo-font';
-import {
-  GoogleAuthProvider,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-} from 'firebase/auth';
+import * as Font from "expo-font";
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { useContext, useEffect, useState } from 'react';
+
 import {
   Alert,
   ScrollView,
@@ -16,21 +14,20 @@ import {
   View,
 } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
-import { auth } from '../services/firebase';
+import { auth, db } from '../services/firebase';
 
 export default function Login({ navigation }) {
   const { colors } = useContext(ThemeContext);
 
-  const [fontsLoaded, setFontsLoaded] = useState(false);
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
   useEffect(() => {
     async function loadFont() {
-      await Font.loadAsync({
-        Panama: require('../../assets/fonts/Panama Personal Use Only.ttf'),
-      });
+      await Font.loadAsync({ Panama: require('../../assets/fonts/Panama Personal Use Only.ttf') });
       setFontsLoaded(true);
     }
     loadFont();
@@ -39,23 +36,28 @@ export default function Login({ navigation }) {
   if (!fontsLoaded) return null;
 
   async function handleLogin() {
-    if (!email || !password) {
-      Alert.alert('Erro', 'Informe email e senha');
+    if (!identifier || !password) {
+      Alert.alert('Erro', 'Preencha todos os campos');
       return;
     }
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigation.replace('App');
-    } catch (error) {
-      Alert.alert('Erro', 'Email ou senha inválidos');
-    }
-  }
+      let emailToUse = identifier;
 
-  async function handleGoogleLogin() {
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      if (!identifier.includes('@')) {
+        const q = query(collection(db, 'users'), where('nickname', '==', identifier));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          Alert.alert('Erro', 'Usuário não encontrado');
+          return;
+        }
+
+        emailToUse = querySnapshot.docs[0].data().email;
+      }
+
+      const userCredential = await signInWithEmailAndPassword(auth, emailToUse, password);
+
       navigation.replace('App');
     } catch (error) {
       Alert.alert('Erro', error.message);
@@ -67,22 +69,19 @@ export default function Login({ navigation }) {
       contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}
       keyboardShouldPersistTaps="handled"
     >
-      {/* LOGO */}
-      <Text style={[styles.logo, { color: colors.buttonBg }]}>GAMELY</Text>
+      <Text style={[styles.logo, { color: colors.buttonBg, fontFamily: 'Panama' }]}>GAMELY</Text>
       <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-        Entre e continue sua jornada gamer
+        Bem-vindo de volta! Faça login para continuar
       </Text>
 
       <TextInput
         style={[styles.input, { backgroundColor: colors.cardBg, color: colors.textPrimary }]}
-        placeholder="Email"
+        placeholder="Email ou Nickname"
         placeholderTextColor={colors.textSecondary}
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
+        value={identifier}
+        onChangeText={setIdentifier}
         autoCapitalize="none"
       />
-
 
       <View style={[styles.passwordContainer, { backgroundColor: colors.cardBg }]}>
         <TextInput
@@ -106,27 +105,13 @@ export default function Login({ navigation }) {
         style={[styles.loginBtn, { backgroundColor: colors.buttonBg }]}
         onPress={handleLogin}
       >
-        <Text style={[styles.loginText, { color: colors.buttonText }]}>
-          Entrar
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={[styles.googleBtn, { borderColor: colors.textSecondary }]}
-        onPress={handleGoogleLogin}
-      >
-        <Ionicons name="logo-google" size={20} color={colors.textSecondary} />
-        <Text style={[styles.googleText, { color: colors.textSecondary }]}>
-          Entrar com Google
-        </Text>
+        <Text style={[styles.loginText, { color: colors.buttonText }]}>Entrar</Text>
       </TouchableOpacity>
 
       <View style={styles.footer}>
         <Text style={{ color: colors.textSecondary }}>Não tem uma conta?</Text>
         <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-          <Text style={{ color: colors.buttonBg, marginLeft: 5 }}>
-            Criar conta
-          </Text>
+          <Text style={{ color: colors.buttonBg, marginLeft: 5 }}>Registrar</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -138,14 +123,15 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: 'center',
     padding: 20,
-    paddingTop: 80,
+    paddingTop: 60,
   },
   logo: {
-    fontFamily: 'Panama',
     fontSize: 42,
-    letterSpacing: 2,
+    fontWeight: 'bold',
     marginBottom: 6,
+    letterSpacing: 2,
     lineHeight: 50,
+    fontFamily: 'Panama',
   },
   subtitle: {
     fontSize: 16,
@@ -169,10 +155,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     alignItems: 'center',
   },
-  passwordInput: {
-    flex: 1,
-    fontSize: 16,
-  },
+  passwordInput: { flex: 1, fontSize: 16 },
   loginBtn: {
     width: '100%',
     paddingVertical: 14,
@@ -184,26 +167,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 5,
   },
-  loginText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  googleBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
-    width: '100%',
-    marginTop: 15,
-  },
-  googleText: {
-    marginLeft: 8,
-    fontSize: 16,
-  },
-  footer: {
-    flexDirection: 'row',
-    marginTop: 20,
-  },
+  loginText: { fontSize: 16, fontWeight: '600', color: '#fff' },
+  footer: { flexDirection: 'row', marginTop: 20 },
 });

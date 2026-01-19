@@ -6,9 +6,9 @@ import { ThemeContext } from '../context/ThemeContext';
 
 import Explore from '../screens/Explore';
 import Home from '../screens/Home';
-import Profile from '../screens/Profile';
 import Shorts from '../screens/Shorts';
 import Create from './CreateNavigator';
+import ProfileNavigator from './ProfileNavigator';
 
 const Tab = createBottomTabNavigator();
 
@@ -67,7 +67,7 @@ export default function AppNavigator() {
 
       <Tab.Screen
         name="Profile"
-        component={Profile}
+        component={ProfileNavigator} // agora é o navigator da aba Profile
         options={{
           tabBarIcon: ({ focused }) => (
             <Ionicons name="person-outline" size={26} color={focused ? colors.tabBarActive : colors.tabBarInactive} />
