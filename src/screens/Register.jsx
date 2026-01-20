@@ -57,7 +57,7 @@ export default function Register({ navigation }) {
         createdAt: serverTimestamp(),
       });
 
-      navigation.replace('App'); // entra direto no app
+      navigation.replace('App');
     } catch (error) {
       Alert.alert('Erro', error.message);
     }
