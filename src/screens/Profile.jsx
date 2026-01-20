@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { useContext, useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { doc, getDoc } from 'firebase/firestore';
+import { useCallback, useContext, useState } from 'react';
 import { FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
 import { ThemeContext } from '../context/ThemeContext';
@@ -12,91 +12,96 @@ export default function Profile({ navigation }) {
   const { user } = useContext(AuthContext);
 
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async () => {
+  const loadProfile = async () => {
     if (!user) return;
-    const docRef = doc(db, 'users', user.uid);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      setProfile(docSnap.data());
-    }
-    setLoading(false);
+    const ref = doc(db, 'users', user.uid);
+    const snap = await getDoc(ref);
+    if (snap.exists()) setProfile(snap.data());
   };
 
-  useEffect(() => {
-    fetchProfile();
-  }, [user]);
+  useFocusEffect(
+    useCallback(() => {
+      loadProfile();
+    }, [user])
+  );
 
-  const pickAvatar = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-
-    if (!result.canceled) return;
-    const docRef = doc(db, 'users', user.uid);
-    await updateDoc(docRef, { avatar: result.assets[0].uri });
-    setProfile(prev => ({ ...prev, avatar: result.assets[0].uri }));
-  };
-
-  if (loading) return null;
+  if (!profile) return null;
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+    <ScrollView style={{ backgroundColor: colors.background }}>
+      {/* BANNER */}
+      <Image
+        source={
+          profile.banner
+            ? { uri: profile.banner }
+            : require('../../assets/banners/default.png')
+        }
+        style={styles.banner}
+      />
+
+      {/* AVATAR + EDIT */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={pickAvatar}>
+        <TouchableOpacity onPress={() => navigation.navigate('EditProfile', { profile, refresh: loadProfile })}>
           <Image
             source={
-              profile.avatar && profile.avatar !== 'NULL'
+              profile.avatar
                 ? { uri: profile.avatar }
                 : require('../../assets/avatars/default.png')
             }
             style={styles.avatar}
           />
         </TouchableOpacity>
-        <View style={styles.info}>
-          <Text style={[styles.name, { color: colors.textPrimary }]}>{profile.fullName}</Text>
-          <Text style={[styles.nickname, { color: colors.textSecondary }]}>@{profile.nickname}</Text>
-        </View>
-        <TouchableOpacity onPress={() => navigation.navigate('EditProfile')}>
-          <Ionicons name="create-outline" size={28} color={colors.textPrimary} />
+
+        <TouchableOpacity
+          style={[styles.editBtn, { backgroundColor: colors.buttonBg }]}
+          onPress={() => navigation.navigate('EditProfile', { profile, refresh: loadProfile })}
+        >
+          <Ionicons name="create-outline" size={20} color="#fff" />
+          <Text style={styles.editText}>Editar</Text>
         </TouchableOpacity>
       </View>
 
+      {/* INFO */}
+      <View style={styles.info}>
+        <Text style={[styles.name, { color: colors.textPrimary }]}>{profile.fullName}</Text>
+        <Text style={[styles.nick, { color: colors.textSecondary }]}>@{profile.nickname}</Text>
+        <Text style={[styles.bio, { color: colors.textPrimary }]}>{profile.bio || 'Nenhuma biografia adicionada'}</Text>
+      </View>
+
+      {/* STATS */}
       <View style={styles.stats}>
         <View style={styles.statItem}>
-          <Text style={[styles.statNumber, { color: colors.textPrimary }]}>{profile.followers}</Text>
+          <Text style={[styles.statNumber, { color: colors.textPrimary }]}>{profile.posts || 0}</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Posts</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={[styles.statNumber, { color: colors.textPrimary }]}>{profile.followers || 0}</Text>
           <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Seguidores</Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={[styles.statNumber, { color: colors.textPrimary }]}>{profile.following}</Text>
+          <Text style={[styles.statNumber, { color: colors.textPrimary }]}>{profile.following || 0}</Text>
           <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Seguindo</Text>
         </View>
       </View>
 
-      <View style={styles.bioContainer}>
-        <Text style={[styles.bio, { color: colors.textPrimary }]}>{profile.bio || 'Adicione uma biografia'}</Text>
-      </View>
-
-      <View style={styles.gamesContainer}>
-        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Jogos</Text>
-        {profile.games.length > 0 ? (
+      {/* JOGOS */}
+      <View style={styles.games}>
+        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Jogos favoritos</Text>
+        {profile.games && profile.games.length > 0 ? (
           <FlatList
-            data={profile.games}
             horizontal
+            data={profile.games}
             keyExtractor={(item, index) => index.toString()}
+            showsHorizontalScrollIndicator={false}
             renderItem={({ item }) => (
               <View style={[styles.gameItem, { backgroundColor: colors.cardBg }]}>
                 <Text style={{ color: colors.textPrimary }}>{item}</Text>
               </View>
             )}
-            showsHorizontalScrollIndicator={false}
           />
         ) : (
-          <Text style={{ color: colors.textSecondary }}>Nenhum jogo adicionado</Text>
+          <Text style={{ color: colors.textSecondary }}>Nenhum jogo selecionado</Text>
         )}
       </View>
     </ScrollView>
@@ -104,24 +109,20 @@ export default function Profile({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-  avatar: { width: 80, height: 80, borderRadius: 40, marginRight: 15 },
-  info: { flex: 1 },
-  name: { fontSize: 20, fontWeight: '700' },
-  nickname: { fontSize: 16 },
-  stats: { flexDirection: 'row', justifyContent: 'space-around', marginVertical: 15 },
+  banner: { width: '100%', height: 160 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, marginTop: -50, alignItems: 'center' },
+  avatar: { width: 100, height: 100, borderRadius: 50, borderWidth: 4, borderColor: '#fff' },
+  editBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, gap: 6 },
+  editText: { color: '#fff', fontWeight: '600' },
+  info: { padding: 20 },
+  name: { fontSize: 22, fontWeight: '700' },
+  nick: { fontSize: 15, marginBottom: 10 },
+  bio: { fontSize: 15, lineHeight: 20 },
+  stats: { flexDirection: 'row', justifyContent: 'space-around', marginVertical: 10 },
   statItem: { alignItems: 'center' },
   statNumber: { fontSize: 18, fontWeight: '700' },
-  statLabel: { fontSize: 14 },
-  bioContainer: { marginBottom: 20 },
-  bio: { fontSize: 16 },
-  gamesContainer: { marginBottom: 20 },
+  statLabel: { fontSize: 13 },
+  games: { paddingHorizontal: 20, marginTop: 10 },
   sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: 10 },
-  gameItem: {
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 20,
-    marginRight: 10,
-  },
+  gameItem: { paddingVertical: 8, paddingHorizontal: 14, borderRadius: 20, marginRight: 10 },
 });

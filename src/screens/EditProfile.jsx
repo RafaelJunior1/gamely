@@ -1,171 +1,197 @@
-import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { useContext, useEffect, useState } from 'react';
+import { doc, updateDoc } from 'firebase/firestore';
+import { useContext, useState } from 'react';
 import {
-    Alert,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
+import { AuthContext } from '../context/AuthContext';
 import { ThemeContext } from '../context/ThemeContext';
-import { auth, db } from '../services/firebase';
+import GAMES from '../data/games.json';
+import { db } from '../services/firebase';
 
-export default function EditProfile({ navigation }) {
+export default function EditProfile({ navigation, route }) {
   const { colors } = useContext(ThemeContext);
-  const [fullName, setFullName] = useState('');
-  const [nickname, setNickname] = useState('');
-  const [bio, setBio] = useState('');
-  const [avatar, setAvatar] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user } = useContext(AuthContext);
+  const { profile, refresh } = route.params;
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
-      if (userDoc.exists()) {
-        const data = userDoc.data();
-        setFullName(data.fullName || '');
-        setNickname(data.nickname || '');
-        setBio(data.bio || '');
-        setAvatar(data.avatar || null);
-      }
-      setLoading(false);
-    };
-    fetchUser();
-  }, []);
+  const [avatar, setAvatar] = useState(profile.avatar);
+  const [banner, setBanner] = useState(profile.banner);
+  const [nickname, setNickname] = useState(profile.nickname);
+  const [bio, setBio] = useState(profile.bio);
+  const [selectedGames, setSelectedGames] = useState(profile.games || []);
+  const [search, setSearch] = useState('');
+  const [filteredGames, setFilteredGames] = useState([]);
 
-  const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.7,
-    });
+  const pickImage = async (type) => {
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
+    aspect: type === 'avatar' ? [1, 1] : [16, 9],
+    quality: 1,
+  });
 
-    if (!result.canceled) {
-      setAvatar(result.assets[0].uri);
+  if (result.canceled) return;
+  const uri = result.assets[0].uri;
+  type === 'avatar' ? setAvatar(uri) : setBanner(uri);
+};
+
+
+  const toggleGame = (game) => {
+    setSelectedGames((prev) =>
+      prev.includes(game) ? prev.filter((g) => g !== game) : [...prev, game]
+    );
+    setSearch('');
+    setFilteredGames([]);
+  };
+
+  const handleSearch = (text) => {
+    setSearch(text);
+    if (!text) {
+      setFilteredGames([]);
+      return;
     }
+    const filtered = GAMES.videogames
+      .map(g => g.title)
+      .filter(title => title.toLowerCase().includes(text.toLowerCase()) && !selectedGames.includes(title));
+    setFilteredGames(filtered);
   };
 
   const handleSave = async () => {
-    if (!fullName || !nickname) {
-      Alert.alert('Erro', 'Nome completo e nickname são obrigatórios.');
+    if (!nickname) {
+      Alert.alert('Erro', 'Nickname não pode ficar vazio');
       return;
     }
-
-    try {
-      await updateDoc(doc(db, 'users', auth.currentUser.uid), {
-        fullName,
-        nickname,
-        bio,
-        avatar,
-      });
-      Alert.alert('Sucesso', 'Perfil atualizado!');
-      navigation.goBack();
-    } catch (error) {
-      Alert.alert('Erro', error.message);
-    }
+    const docRef = doc(db, 'users', user.uid);
+    await updateDoc(docRef, {
+      avatar: avatar || null,
+      banner: banner || null,
+      nickname,
+      bio,
+      games: selectedGames,
+    });
+    if (refresh) refresh();
+    navigation.goBack();
   };
 
-  if (loading) return null;
+  const handleCancel = () => {
+    Alert.alert('Cancelar edição', 'Tem certeza que quer cancelar?', [
+      { text: 'Não' },
+      { text: 'Sim', onPress: () => navigation.goBack() },
+    ]);
+  };
+
+  const avatarSource = avatar === null ? require('../../assets/avatars/default.png') : { uri: avatar };
+  const bannerSource = banner === null ? require('../../assets/banners/default.png') : { uri: banner };
 
   return (
-    <ScrollView
-      contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}
-    >
-      <TouchableOpacity onPress={pickImage} style={styles.avatarContainer}>
-        {avatar ? (
-          <Image source={{ uri: avatar }} style={styles.avatar} />
-        ) : (
-          <View style={[styles.avatarPlaceholder, { borderColor: colors.buttonBg }]}>
-            <Ionicons name="camera-outline" size={40} color={colors.buttonBg} />
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Image source={bannerSource} style={styles.banner} />
+      <TouchableOpacity style={styles.changeBanner} onPress={() => pickImage('banner')}>
+        <Text style={{ color: '#fff' }}>Alterar Banner</Text>
+      </TouchableOpacity>
+
+      <View style={styles.avatarContainer}>
+        <TouchableOpacity onPress={() => pickImage('avatar')}>
+          <Image source={avatarSource} style={styles.avatar} />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.form}>
+        <Text style={[styles.label, { color: colors.textPrimary }]}>Nickname</Text>
+        <TextInput
+          style={[styles.input, { backgroundColor: colors.cardBg, color: colors.textPrimary }]}
+          value={nickname}
+          onChangeText={setNickname}
+        />
+
+        <Text style={[styles.label, { color: colors.textPrimary }]}>Biografia</Text>
+        <TextInput
+          style={[styles.input, { backgroundColor: colors.cardBg, color: colors.textPrimary, height: 80 }]}
+          value={bio}
+          onChangeText={setBio}
+          multiline
+        />
+
+        <Text style={[styles.label, { color: colors.textPrimary }]}>Jogos Favoritos</Text>
+        <TextInput
+          style={[styles.input, { backgroundColor: colors.cardBg, color: colors.textPrimary }]}
+          placeholder="Pesquise jogos..."
+          value={search}
+          onChangeText={handleSearch}
+        />
+
+        {filteredGames.length > 0 && (
+          <View style={[styles.searchResults, { backgroundColor: colors.cardBg }]}>
+            {filteredGames.map((title) => (
+              <TouchableOpacity key={title} onPress={() => toggleGame(title)} style={styles.resultItem}>
+                <Text style={{ color: colors.textPrimary }}>{title}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
         )}
-        <Text style={{ color: colors.textSecondary, marginTop: 6 }}>Alterar Avatar</Text>
-      </TouchableOpacity>
 
-      <TextInput
-        style={[styles.input, { backgroundColor: colors.cardBg, color: colors.textPrimary }]}
-        placeholder="Nome completo"
-        placeholderTextColor={colors.textSecondary}
-        value={fullName}
-        onChangeText={setFullName}
-      />
+        {selectedGames.length > 0 && (
+          <View style={styles.selectedGames}>
+            {selectedGames.map((game) => (
+              <View key={game} style={[styles.selectedItem, { backgroundColor: colors.buttonBg }]}>
+                <Text style={{ color: '#fff' }}>{game}</Text>
+                <TouchableOpacity onPress={() => toggleGame(game)}>
+                  <Text style={{ color: '#fff', marginLeft: 6 }}>✕</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
 
-      <TextInput
-        style={[styles.input, { backgroundColor: colors.cardBg, color: colors.textPrimary }]}
-        placeholder="Nickname"
-        placeholderTextColor={colors.textSecondary}
-        value={nickname}
-        onChangeText={setNickname}
-      />
-
-      <TextInput
-        style={[
-          styles.input,
-          { backgroundColor: colors.cardBg, color: colors.textPrimary, height: 100, textAlignVertical: 'top' },
-        ]}
-        placeholder="Biografia"
-        placeholderTextColor={colors.textSecondary}
-        value={bio}
-        onChangeText={setBio}
-        multiline
-      />
-
-      <TouchableOpacity
-        style={[styles.saveBtn, { backgroundColor: colors.buttonBg }]}
-        onPress={handleSave}
-      >
-        <Text style={{ color: colors.buttonText, fontSize: 16, fontWeight: '600' }}>
-          Salvar Alterações
-        </Text>
-      </TouchableOpacity>
+      <View style={styles.buttons}>
+        <TouchableOpacity style={[styles.saveBtn, { backgroundColor: colors.buttonBg }]} onPress={handleSave}>
+          <Text style={{ color: '#fff', fontWeight: '700' }}>Salvar</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.cancelBtn, { borderColor: colors.textSecondary }]} onPress={handleCancel}>
+          <Text style={{ color: colors.textSecondary, fontWeight: '700' }}>Cancelar</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    paddingTop: 40,
+  container: { flex: 1 },
+  banner: { width: '100%', height: 180 },
+  changeBanner: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    backgroundColor: '#00000088',
+    padding: 6,
+    borderRadius: 6,
+  },
+  avatarContainer: { alignItems: 'center', marginTop: -40, marginBottom: 20 },
+  avatar: { width: 100, height: 100, borderRadius: 50, borderWidth: 3, borderColor: '#fff' },
+  form: { paddingHorizontal: 20 },
+  label: { marginTop: 15, marginBottom: 6, fontWeight: '700' },
+  input: { borderRadius: 12, paddingHorizontal: 16, paddingVertical: 10, fontSize: 16 },
+  searchResults: { marginTop: 5, borderRadius: 8, maxHeight: 510 },
+  resultItem: { paddingVertical: 8, paddingHorizontal: 10 },
+  selectedGames: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 10 },
+  selectedItem: {
+    flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginRight: 6,
+    marginBottom: 6,
   },
-  avatarContainer: {
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-  },
-  avatarPlaceholder: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  input: {
-    width: '100%',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 12,
-    fontSize: 16,
-  },
-  saveBtn: {
-    width: '100%',
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 10,
-    shadowColor: '#7C4DFF',
-    shadowOpacity: 0.5,
-    shadowRadius: 8,
-    elevation: 5,
-  },
+  buttons: { flexDirection: 'row', justifyContent: 'space-around', marginVertical: 20 },
+  saveBtn: { paddingVertical: 14, paddingHorizontal: 40, borderRadius: 12 },
+  cancelBtn: { paddingVertical: 14, paddingHorizontal: 40, borderRadius: 12, borderWidth: 1 },
 });

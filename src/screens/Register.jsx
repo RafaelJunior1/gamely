@@ -48,6 +48,7 @@ export default function Register({ navigation }) {
         nickname,
         email,
         avatar: null,
+        banner: null,
         bio: '',
         followers: 0,
         following: 0,
