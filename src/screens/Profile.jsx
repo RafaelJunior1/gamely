@@ -28,29 +28,16 @@ export default function Profile({ navigation }) {
 
   if (!profile) return null;
 
+  const avatarSource = profile.avatar ? { uri: profile.avatar } : require('../../assets/avatars/default.png');
+  const bannerSource = profile.banner ? { uri: profile.banner } : require('../../assets/banners/default.png');
+
   return (
     <ScrollView style={{ backgroundColor: colors.background }}>
-      {/* BANNER */}
-      <Image
-        source={
-          profile.banner
-            ? { uri: profile.banner }
-            : require('../../assets/banners/default.png')
-        }
-        style={styles.banner}
-      />
+      <Image source={bannerSource} style={styles.banner} />
 
-      {/* AVATAR + EDIT */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.navigate('EditProfile', { profile, refresh: loadProfile })}>
-          <Image
-            source={
-              profile.avatar
-                ? { uri: profile.avatar }
-                : require('../../assets/avatars/default.png')
-            }
-            style={styles.avatar}
-          />
+          <Image source={avatarSource} style={styles.avatar} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -62,14 +49,12 @@ export default function Profile({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* INFO */}
       <View style={styles.info}>
         <Text style={[styles.name, { color: colors.textPrimary }]}>{profile.fullName}</Text>
         <Text style={[styles.nick, { color: colors.textSecondary }]}>@{profile.nickname}</Text>
         <Text style={[styles.bio, { color: colors.textPrimary }]}>{profile.bio || 'Nenhuma biografia adicionada'}</Text>
       </View>
 
-      {/* STATS */}
       <View style={styles.stats}>
         <View style={styles.statItem}>
           <Text style={[styles.statNumber, { color: colors.textPrimary }]}>{profile.posts || 0}</Text>
@@ -85,7 +70,6 @@ export default function Profile({ navigation }) {
         </View>
       </View>
 
-      {/* JOGOS */}
       <View style={styles.games}>
         <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Jogos favoritos</Text>
         {profile.games && profile.games.length > 0 ? (

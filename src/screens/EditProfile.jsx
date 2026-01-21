@@ -14,6 +14,7 @@ import {
 import { AuthContext } from '../context/AuthContext';
 import { ThemeContext } from '../context/ThemeContext';
 import GAMES from '../data/games.json';
+import { uploadImageToCloudinary } from '../services/cloudinary';
 import { db } from '../services/firebase';
 
 export default function EditProfile({ navigation, route }) {
@@ -30,18 +31,16 @@ export default function EditProfile({ navigation, route }) {
   const [filteredGames, setFilteredGames] = useState([]);
 
   const pickImage = async (type) => {
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    allowsEditing: true,
-    aspect: type === 'avatar' ? [1, 1] : [16, 9],
-    quality: 1,
-  });
-
-  if (result.canceled) return;
-  const uri = result.assets[0].uri;
-  type === 'avatar' ? setAvatar(uri) : setBanner(uri);
-};
-
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: type === 'avatar' ? [1, 1] : [16, 9],
+      quality: 1,
+    });
+    if (result.canceled) return;
+    const uri = result.assets[0].uri;
+    type === 'avatar' ? setAvatar(uri) : setBanner(uri);
+  };
 
   const toggleGame = (game) => {
     setSelectedGames((prev) =>
@@ -68,14 +67,29 @@ export default function EditProfile({ navigation, route }) {
       Alert.alert('Erro', 'Nickname não pode ficar vazio');
       return;
     }
+
+    let avatarUrl = avatar;
+    let bannerUrl = banner;
+
+    if (avatar && !avatar.startsWith('http')) {
+      const uploadedAvatar = await uploadImageToCloudinary(avatar, 'avatars');
+      if (uploadedAvatar) avatarUrl = uploadedAvatar;
+    }
+
+    if (banner && !banner.startsWith('http')) {
+      const uploadedBanner = await uploadImageToCloudinary(banner, 'banners');
+      if (uploadedBanner) bannerUrl = uploadedBanner;
+    }
+
     const docRef = doc(db, 'users', user.uid);
     await updateDoc(docRef, {
-      avatar: avatar || null,
-      banner: banner || null,
+      avatar: avatarUrl || null,
+      banner: bannerUrl || null,
       nickname,
       bio,
       games: selectedGames,
     });
+
     if (refresh) refresh();
     navigation.goBack();
   };
@@ -87,8 +101,8 @@ export default function EditProfile({ navigation, route }) {
     ]);
   };
 
-  const avatarSource = avatar === null ? require('../../assets/avatars/default.png') : { uri: avatar };
-  const bannerSource = banner === null ? require('../../assets/banners/default.png') : { uri: banner };
+  const avatarSource = avatar ? { uri: avatar } : require('../../assets/avatars/default.png');
+  const bannerSource = banner ? { uri: banner } : require('../../assets/banners/default.png');
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
