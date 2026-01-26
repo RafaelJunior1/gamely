@@ -36,12 +36,10 @@ export default function Profile({ navigation }) {
     const data = snap.data();
     setProfile(data);
 
-    // Animar números
     postsAnim.value = withTiming(data.posts || 0, { duration: 800, easing: Easing.out(Easing.exp) });
     followersAnim.value = withTiming(data.followers ? data.followers.length : 0, { duration: 800, easing: Easing.out(Easing.exp) });
     followingAnim.value = withTiming(data.following ? data.following.length : 0, { duration: 800, easing: Easing.out(Easing.exp) });
 
-    // Carregar seguidores completos
     if (data.followers && data.followers.length > 0) {
       const usersRef = collection(db, 'users');
       const q = query(usersRef, where('__name__', 'in', data.followers));
