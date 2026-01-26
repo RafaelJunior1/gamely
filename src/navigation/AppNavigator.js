@@ -4,10 +4,10 @@ import { useContext } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
 
-import Explore from '../screens/Explore';
 import Home from '../screens/Home';
 import Shorts from '../screens/Shorts';
 import Create from './CreateNavigator';
+import ExploreStack from './ExploreStackNavigator';
 import ProfileNavigator from './ProfileNavigator';
 
 const Tab = createBottomTabNavigator();
@@ -57,7 +57,7 @@ export default function AppNavigator() {
 
       <Tab.Screen
         name="Explore"
-        component={Explore}
+        component={ExploreStack}
         options={{
           tabBarIcon: ({ focused }) => (
             <Ionicons name="search-outline" size={26} color={focused ? colors.tabBarActive : colors.tabBarInactive} />

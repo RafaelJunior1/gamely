@@ -1,9 +1,9 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import CreateCamera from '../screens/create/CreateCamera';
-import CreateContent from '../screens/create/CreateContent';
-import CreatePost from '../screens/create/CreatePost';
-import CreateReel from '../screens/create/CreateReel';
-import CreateStory from '../screens/create/CreateStory';
+import CreateCamera from '../screens/Create/CreateCamera';
+import CreateContent from '../screens/Create/CreateContent';
+import CreatePost from '../screens/Create/CreatePost';
+import CreateReel from '../screens/Create/CreateReel';
+import CreateStory from '../screens/Create/CreateStory';
 
 const Stack = createNativeStackNavigator();
 

@@ -11,11 +11,11 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { AuthContext } from '../context/AuthContext';
-import { ThemeContext } from '../context/ThemeContext';
-import GAMES from '../data/games.json';
-import { uploadImageToCloudinary } from '../services/cloudinary';
-import { db } from '../services/firebase';
+import { AuthContext } from '../../context/AuthContext';
+import { ThemeContext } from '../../context/ThemeContext';
+import GAMES from '../../data/games.json';
+import { uploadImageToCloudinary } from '../../services/cloudinary';
+import { db } from '../../services/firebase';
 
 export default function EditProfile({ navigation, route }) {
   const { colors } = useContext(ThemeContext);
@@ -101,8 +101,8 @@ export default function EditProfile({ navigation, route }) {
     ]);
   };
 
-  const avatarSource = avatar ? { uri: avatar } : require('../../assets/avatars/default.png');
-  const bannerSource = banner ? { uri: banner } : require('../../assets/banners/default.png');
+  const avatarSource = avatar ? { uri: avatar } : require('../../../assets/avatars/default.png');
+  const bannerSource = banner ? { uri: banner } : require('../../../assets/banners/default.png');
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
   banner: { width: '100%', height: 180 },
   changeBanner: {
     position: 'absolute',
-    top: 20,
+    top: 40,
     right: 20,
     backgroundColor: '#00000088',
     padding: 6,

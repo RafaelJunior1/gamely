@@ -38,3 +38,4 @@ export async function uploadImageToCloudinary(uri, folder = 'assets') {
     return null;
   }
 }
+
