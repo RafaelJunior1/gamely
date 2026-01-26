@@ -14,12 +14,10 @@ import { ThemeContext } from '../../context/ThemeContext';
 export default function PrivacyScreen({ navigation }) {
   const { colors } = useContext(ThemeContext);
 
-  // PRIVACIDADE
   const [privateAccount, setPrivateAccount] = useState(false);
   const [showOnlineStatus, setShowOnlineStatus] = useState(true);
   const [allowMessages, setAllowMessages] = useState(true);
 
-  // SEGURANÇA
   const [twoFactorAuth, setTwoFactorAuth] = useState(false);
   const [loginAlerts, setLoginAlerts] = useState(true);
 

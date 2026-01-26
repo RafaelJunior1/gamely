@@ -18,7 +18,6 @@ export default function Settings({ navigation }) {
   const { user } = useContext(AuthContext);
   const { colors, themeMode, setThemeMode } = useContext(ThemeContext);
 
-  // Notificações (state local)
   const [notifPosts, setNotifPosts] = useState(true);
   const [notifMessages, setNotifMessages] = useState(true);
   const [notifStories, setNotifStories] = useState(true);
