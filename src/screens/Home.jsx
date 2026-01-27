@@ -1,6 +1,15 @@
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { useContext } from 'react';
-import { Dimensions, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useContext, useEffect, useRef } from 'react';
+import {
+  Animated,
+  Dimensions,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import Header from '../components/Header';
 import { ThemeContext } from '../context/ThemeContext';
 
@@ -17,6 +26,7 @@ const postsData = [
     shares: 14,
     description: 'Check this insane frag!',
     audio: 'Cyber Beat',
+    game: 'Valorant',
   },
   {
     id: '2',
@@ -28,18 +38,45 @@ const postsData = [
     shares: 20,
     description: 'New level unlocked!',
     audio: 'Epic Gamer Music',
+    game: 'Minecraft',
   },
 ];
 
-export default function Home() {
-  const { colors, themeMode, setThemeMode } = useContext(ThemeContext);
+export default function Home({ navigation }) {
+  const { colors } = useContext(ThemeContext);
+
+  // Função para animar os números
+  const AnimatedNumber = ({ value, duration = 800, style }) => {
+    const animatedValue = useRef(new Animated.Value(0)).current;
+    useEffect(() => {
+      Animated.timing(animatedValue, {
+        toValue: value,
+        duration,
+        useNativeDriver: false,
+      }).start();
+    }, [value]);
+
+    const animatedText = animatedValue.interpolate({
+      inputRange: [0, value],
+      outputRange: [0, value],
+      extrapolate: 'clamp',
+    });
+
+    return (
+      <Animated.Text style={style}>
+        {animatedValue.interpolate({
+          inputRange: [0, value],
+          outputRange: [0, value],
+          extrapolate: 'clamp',
+        }).__getValue().toFixed(0)}
+      </Animated.Text>
+    );
+  };
 
   const renderPost = ({ item }) => (
     <View style={[styles.postContainer, { backgroundColor: colors.cardBg }]}>
-      {/* Imagem do post */}
       <Image source={{ uri: item.image }} style={styles.postImage} />
 
-      {/* Overlay com informações */}
       <View style={styles.overlay}>
         <View style={styles.userInfo}>
           <Image source={{ uri: item.avatar }} style={styles.avatar} />
@@ -49,29 +86,36 @@ export default function Home() {
           </TouchableOpacity>
         </View>
 
-        {/* Descrição */}
         <Text style={[styles.description, { color: colors.textPrimary }]}>{item.description}</Text>
 
-        {/* Áudio do post */}
+        <Text style={[styles.gameName, { color: colors.textSecondary }]}>
+          🎮 {item.game}
+        </Text>
+
         <Text style={[styles.audio, { color: colors.textSecondary }]}>
           <Ionicons name="musical-note-outline" size={16} color={colors.textSecondary} /> {item.audio}
         </Text>
 
-        {/* Botões laterais */}
         <View style={styles.sideButtons}>
           <TouchableOpacity style={styles.sideBtn}>
             <Ionicons name="heart-outline" size={28} color="#FF4444" />
-            <Text style={[styles.sideBtnText, { color: colors.textSecondary }]}>{item.likes}</Text>
+            <Text style={[styles.sideBtnText, { color: colors.textSecondary }]}>
+              <AnimatedCount value={item.likes} />
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.sideBtn}>
             <Ionicons name="chatbubble-outline" size={28} color={colors.textSecondary} />
-            <Text style={[styles.sideBtnText, { color: colors.textSecondary }]}>{item.comments}</Text>
+            <Text style={[styles.sideBtnText, { color: colors.textSecondary }]}>
+              <AnimatedCount value={item.comments} />
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.sideBtn}>
             <Ionicons name="arrow-redo-outline" size={28} color={colors.textSecondary} />
-            <Text style={[styles.sideBtnText, { color: colors.textSecondary }]}>{item.shares}</Text>
+            <Text style={[styles.sideBtnText, { color: colors.textSecondary }]}>
+              <AnimatedCount value={item.shares} />
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.sideBtn}>
@@ -84,7 +128,7 @@ export default function Home() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Header themeMode={themeMode} onToggleTheme={setThemeMode} />
+      <Header navigation={navigation} />
 
       <FlatList
         data={postsData}
@@ -96,6 +140,27 @@ export default function Home() {
     </View>
   );
 }
+
+const AnimatedCount = ({ value }) => {
+  const animatedValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(animatedValue, {
+      toValue: value,
+      duration: 1000,
+      useNativeDriver: false,
+    }).start();
+  }, [value]);
+
+  return (
+    <Animated.Text>
+      {animatedValue.interpolate({
+        inputRange: [0, value],
+        outputRange: [0, value],
+      }).__getValue().toFixed(0)}
+    </Animated.Text>
+  );
+};
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
@@ -129,9 +194,11 @@ const styles = StyleSheet.create({
 
   followBtn: { marginLeft: 10, paddingVertical: 3, paddingHorizontal: 8, borderRadius: 6 },
 
-  followText: { color: '#fff', fontFamily: 'Roboto', fontSize: 12 },
+  followText: { color: '#fff', fontFamily: 'Panama', fontSize: 12 },
 
   description: { fontFamily: 'Roboto', fontSize: 14, marginBottom: 4 },
+
+  gameName: { fontFamily: 'Roboto', fontSize: 12, marginBottom: 4, fontStyle: 'italic' },
 
   audio: { fontFamily: 'Roboto', fontSize: 12, marginBottom: 8 },
 

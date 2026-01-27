@@ -4,10 +4,10 @@ import { useContext } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
 
-import Home from '../screens/Home';
 import Shorts from '../screens/Shorts';
 import Create from './CreateNavigator';
 import ExploreStack from './ExploreStackNavigator';
+import HomeStackNavigator from './HomeStackNavigator';
 import ProfileNavigator from './ProfileNavigator';
 
 const Tab = createBottomTabNavigator();
@@ -25,7 +25,7 @@ export default function AppNavigator() {
     >
       <Tab.Screen
         name="Home"
-        component={Home}
+        component={HomeStackNavigator}
         options={{
           tabBarIcon: ({ focused }) => (
             <Ionicons name="home-outline" size={26} color={focused ? colors.tabBarActive : colors.tabBarInactive} />
@@ -67,7 +67,7 @@ export default function AppNavigator() {
 
       <Tab.Screen
         name="Profile"
-        component={ProfileNavigator} // agora é o navigator da aba Profile
+        component={ProfileNavigator}
         options={{
           tabBarIcon: ({ focused }) => (
             <Ionicons name="person-outline" size={26} color={focused ? colors.tabBarActive : colors.tabBarInactive} />
