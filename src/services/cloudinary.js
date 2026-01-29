@@ -1,41 +1,69 @@
-import { Platform } from 'react-native';
+import { Platform } from "react-native";
 
-const CLOUD_NAME = 'dyy0hwnns';
-const UPLOAD_PRESET = 'ml_default';
+const CLOUD_NAME = "dyy0hwnns";
+const UPLOAD_PRESET = "ml_default";
 
-export async function uploadImageToCloudinary(uri, folder = 'assets') {
+const getExt = (uri = "") => {
+  const clean = uri.split("?")[0];
+  const parts = clean.split(".");
+  return parts.length > 1 ? parts.pop().toLowerCase() : "jpg";
+};
+
+const guessMime = (uri) => {
+  const ext = getExt(uri);
+
+  if (["jpg", "jpeg"].includes(ext)) return "image/jpeg";
+  if (ext === "png") return "image/png";
+  if (ext === "webp") return "image/webp";
+  if (ext === "heic") return "image/heic";
+  if (ext === "mp4") return "video/mp4";
+  if (ext === "mov") return "video/quicktime";
+
+  return "application/octet-stream";
+};
+
+export async function uploadImageToCloudinary(uri, folder = "assets") {
   try {
-    let file;
-    
-    if (Platform.OS === 'web') {
-      file = uri;
-    } else {
-      const uriParts = uri.split('.');
-      const fileType = uriParts[uriParts.length - 1];
-      file = {
-        uri: Platform.OS === 'ios' ? uri : uri.replace('file://', ''),
-        type: `image/${fileType}`,
-        name: `upload.${fileType}`,
-      };
-    }
+    if (!uri) return null;
+
+    const ext = getExt(uri);
+    const mimeType = guessMime(uri);
+    const isVideo = mimeType.startsWith("video/");
+    const resourceType = isVideo ? "video" : "image";
 
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', UPLOAD_PRESET);
-    formData.append('folder', folder);
+
+    if (Platform.OS === "ios") {
+      formData.append("file", uri);
+    } else {
+      formData.append("file", {
+        uri,
+        name: `upload.${ext}`,
+        type: mimeType,
+      });
+    }
+
+    formData.append("upload_preset", UPLOAD_PRESET);
+    formData.append("folder", folder);
 
     const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-      { method: 'POST', body: formData }
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`,
+      {
+        method: "POST",
+        body: formData,
+      }
     );
 
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error?.message || 'Upload failed');
+
+    if (!response.ok) {
+      console.error("Cloudinary error:", data);
+      return null;
+    }
 
     return data.secure_url;
   } catch (error) {
-    console.error('Cloudinary upload error:', error.message);
+    console.error("Cloudinary upload error:", error);
     return null;
   }
 }
-

@@ -72,6 +72,14 @@ export default function DrawerContent({ navigation }) {
 
         <TouchableOpacity
           style={styles.menuItem}
+          onPress={() => navigation.navigate('Games')}
+        >
+          <Ionicons name="game-controller-outline" size={22} color={colors.textPrimary} />
+          <Text style={[styles.menuText, { color: colors.textPrimary }]}>Ver Jogos</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
           onPress={() => navigation.navigate('Explore')}
         >
           <Ionicons name="search-outline" size={22} color={colors.textPrimary} />
@@ -112,7 +120,7 @@ export default function DrawerContent({ navigation }) {
 
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => navigation.navigate('Settings')}
+          onPress={() => navigation.navigate('Profile', { screen: 'Settings'})}
         >
           <Ionicons name="settings-outline" size={22} color={colors.textPrimary} />
           <Text style={[styles.menuText, { color: colors.textPrimary }]}>

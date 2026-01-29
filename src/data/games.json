@@ -1,256 +1,313 @@
 {
   "videogames": [
     {
-      "id": 1,
+      "id": "minecraft",
       "title": "Minecraft",
       "developer": "Mojang Studios",
       "publisher": "Mojang Studios",
-      "platforms": ["PC", "PS4", "PS5", "Xbox One", "Xbox Series X/S", "Switch", "Mobile"],
       "genres": ["Sandbox", "Sobrevivência"],
-      "release_year": 2011,
-      "synopsis": "Construa, explore e sobreviva em um mundo gerado proceduralmente.",
-      "rating": 95,
-      "multiplayer": true
+      "releaseYear": 2011,
+      "rating": 9.5,
+      "multiplayer": true,
+      "image": "https://upload.wikimedia.org/wikipedia/pt/thumb/9/9c/Minecraft_capa.png/268px-Minecraft_capa.png",
+      "description": "Minecraft é um dos jogos mais influentes de todos os tempos. Nele, os jogadores exploram um mundo gerado proceduralmente composto por blocos, podendo minerar, construir, cultivar e sobreviver contra monstros de noite. Desde seu lançamento, gerou inúmeras atualizações e continua sendo um sucesso mundial.",
+      "sequence": []
     },
     {
-      "id": 2,
-      "title": "Grand Theft Auto V",
-      "developer": "Rockstar North",
+      "id": "gta_series",
+      "title": "Grand Theft Auto (Franquia)",
+      "developer": "Rockstar Games",
       "publisher": "Rockstar Games",
-      "platforms": ["PC", "PS3", "PS4", "PS5", "Xbox 360", "Xbox One", "Xbox Series X/S"],
-      "genres": ["Ação", "Aventura", "Open World"],
-      "release_year": 2013,
-      "synopsis": "Três protagonistas enfrentam crime e exploração em Los Santos.",
-      "rating": 96,
-      "multiplayer": true
+      "genres": ["Ação", "Mundo Aberto", "Crime"],
+      "releaseYear": 1997,
+      "rating": 9.3,
+      "multiplayer": true,
+      "image": "https://fabrikbrands.com/wp-content/uploads/Grand-Theft-Auto-Logo-1-1155x770.png",
+      "description": "Grand Theft Auto é um dos nomes mais emblemáticos dos videogames, conhecido por suas experiências de mundo aberto, narrativas intensas e liberdade total de ação. Cada título explora diferentes cidades fictícias e histórias de crime e sobrevivência.",
+      "sequence": [
+        {
+          "id": "gta_iii",
+          "title": "Grand Theft Auto III",
+          "releaseYear": 2001,
+          "image": "https://upload.wikimedia.org/wikipedia/en/b/be/GTA3boxcover.jpg",
+          "description": "Um marco no mundo aberto em 3D, levando a série a um novo patamar de narrativa e exploração urbana."
+        },
+        {
+          "id": "gta_vice_city",
+          "title": "Grand Theft Auto: Vice City",
+          "releaseYear": 2002,
+          "image": "https://upload.wikimedia.org/wikipedia/en/c/ce/Vice-city-cover.jpg",
+          "description": "Ambientado na vibrante Vice City dos anos 80, este título combina ação intensa com uma trilha sonora memorável."
+        },
+        {
+          "id": "gta_san_andreas",
+          "title": "Grand Theft Auto: San Andreas",
+          "releaseYear": 2004,
+          "image": "https://upload.wikimedia.org/wikipedia/pt/thumb/d/d3/Grand_Theft_Auto_San_Andreas_capa.png/250px-Grand_Theft_Auto_San_Andreas_capa.png",
+          "description": "Uma das entradas mais queridas da série, com um enorme mapa que inclui cidades e áreas rurais, misturando gangues, cultura e ação."
+        },
+        {
+          "id": "gta_iv",
+          "title": "Grand Theft Auto IV",
+          "releaseYear": 2008,
+          "image": "https://upload.wikimedia.org/wikipedia/pt/9/91/Grand_Theft_Auto_IV_capa.png",
+          "description": "História profunda e sombria de Niko Bellic lutando para sobreviver na metrópole implacável de Liberty City."
+        },
+        {
+          "id": "gta_v",
+          "title": "Grand Theft Auto V",
+          "releaseYear": 2013,
+          "image": "https://upload.wikimedia.org/wikipedia/en/thumb/a/a5/Grand_Theft_Auto_V.png/250px-Grand_Theft_Auto_V.png",
+          "description": "GTA V é um fenômeno cultural que mistura ação, narrativa cinematográfica e um mundo vivo repleto de atividades para explorar."
+        },
+        {
+          "id": "gta_vi",
+          "title": "Grand Theft Auto VI",
+          "releaseYear": 2026,
+          "image": "https://upload.wikimedia.org/wikipedia/pt/4/46/Grand_Theft_Auto_VI.png",
+          "description": "A próxima grande entrada na franquia, prometendo um mundo ainda mais vasto, narrativas envolventes e a tão aguardada experiência de Vice City atualizada."
+        }
+      ]
     },
     {
-      "id": 3,
-      "title": "Fortnite",
-      "developer": "Epic Games",
-      "publisher": "Epic Games",
-      "platforms": ["PC", "PS4", "PS5", "Xbox One", "Xbox Series X/S", "Switch", "Mobile"],
-      "genres": ["Battle Royale", "Shooter"],
-      "release_year": 2017,
-      "synopsis": "Batalha online em ilha com construção e sobrevivência contra outros jogadores.",
-      "rating": 89,
-      "multiplayer": true
+      "id": "cyberpunk_2077",
+      "title": "Cyberpunk 2077",
+      "developer": "CD Projekt Red",
+      "publisher": "CD Projekt",
+      "genres": ["RPG", "Ação"],
+      "releaseYear": 2020,
+      "rating": 8.9,
+      "multiplayer": false,
+      "image": "https://upload.wikimedia.org/wikipedia/pt/f/f7/Cyberpunk_2077_capa.png",
+      "description": "Cyberpunk 2077 é um RPG de ação ambientado em uma metrópole futurista cheia de tecnologia, gangues e dilemas morais. Apesar de um lançamento conturbado, o jogo evoluiu com atualizações substanciais para oferecer uma experiência imersiva e narrativa rica.",
+      "sequence": []
     },
     {
-      "id": 4,
-      "title": "Free Fire",
-      "developer": "Garena",
-      "publisher": "Garena",
-      "platforms": ["Mobile"],
-      "genres": ["Battle Royale", "Shooter"],
-      "release_year": 2017,
-      "synopsis": "Jogo de tiro rápido em partidas de sobrevivência online.",
-      "rating": 85,
-      "multiplayer": true
-    },
-    {
-      "id": 5,
+      "id": "roblox",
       "title": "Roblox",
       "developer": "Roblox Corporation",
       "publisher": "Roblox Corporation",
-      "platforms": ["PC", "Mobile", "Console"],
-      "genres": ["Sandbox", "Multiplayer"],
-      "release_year": 2006,
-      "synopsis": "Plataforma de jogos criados pelos próprios jogadores.",
-      "rating": 87,
-      "multiplayer": true
+      "genres": ["Multijogador", "Criação"],
+      "releaseYear": 2006,
+      "rating": 8.1,
+      "multiplayer": true,
+      "image": "https://m.media-amazon.com/images/I/81nCKnbL1CL._AC_UF1000,1000_QL80_.jpg",
+      "description": "Roblox é uma plataforma de criação social onde milhões de mundos são criados por jogadores. Cada experiência pode variar de simuladores a RPGs e minigames. Roblox continua sendo um dos jogos mais populares globalmente por sua liberdade criativa e comunidade ativa.", 
+      "sequence": []
     },
     {
-      "id": 6,
-      "title": "Tetris",
-      "developer": "Alexey Pajitnov",
-      "publisher": "The Tetris Company",
-      "platforms": ["Multi-plataforma"],
-      "genres": ["Puzzle"],
-      "release_year": 1984,
-      "synopsis": "Organize blocos que caem para formar linhas completas.",
-      "rating": 97,
-      "multiplayer": false
+      "id": "fortnite",
+      "title": "Fortnite",
+      "developer": "Epic Games",
+      "publisher": "Epic Games",
+      "genres": ["Battle Royale", "Tiro"],
+      "releaseYear": 2017,
+      "rating": 8.7,
+      "multiplayer": true,
+      "image": "https://static.wikia.nocookie.net/fortnite_ptbr_gamepedia_ptbr/images/a/ae/Fortnite_%28Update_v28.00%29_-_Cover_Art_-_Fortnite.jpg/revision/latest?cb=20240503123646",
+      "description": "Fortnite revolucionou o gênero Battle Royale com sua mistura de construção, ação e eventos ao vivo. O jogo apresenta temporadas temáticas e colaborações com franquias populares que continuam a atrair milhões de jogadores globalmente.",
+      "sequence": []
     },
     {
-      "id": 7,
-      "title": "Five Nights at Freddy's",
-      "developer": "Scott Cawthon",
-      "publisher": "Scott Cawthon",
-      "platforms": ["PC", "Mobile", "Console"],
-      "genres": ["Horror", "Survival"],
-      "release_year": 2014,
-      "synopsis": "Sobreviva à noite vigiando animatrônicos assustadores.",
-      "rating": 85,
-      "multiplayer": false
+      "id": "free_fire",
+      "title": "Garena Free Fire",
+      "developer": "111dots Studio",
+      "publisher": "Garena",
+      "genres": ["Battle Royale"],
+      "releaseYear": 2017,
+      "rating": 8.0,
+      "multiplayer": true,
+      "image": "https://static.wikia.nocookie.net/freefire/images/d/dd/Free_Fire.jpg/revision/latest?cb=20230131043654",
+      "description": "Garena Free Fire é um dos jogos mobile mais jogados do mundo, especialmente popular no Brasil e em mercados emergentes. Partidas rápidas e intensas, combinadas com personagens únicos, fizeram do jogo uma referência no gênero Battle Royale mobile.", 
+      "sequence": []
     },
     {
-      "id": 8,
-      "title": "Five Nights at Freddy's 2",
-      "developer": "Scott Cawthon",
-      "publisher": "Scott Cawthon",
-      "platforms": ["PC", "Mobile", "Console"],
-      "genres": ["Horror", "Survival"],
-      "release_year": 2014,
-      "synopsis": "Novos animatrônicos e desafios em uma pizzaria atualizada.",
-      "rating": 84,
-      "multiplayer": false
+      "id": "valorant",
+      "title": "Valorant",
+      "developer": "Riot Games",
+      "publisher": "Riot Games",
+      "genres": ["Tiro", "Competitivo"],
+      "releaseYear": 2020,
+      "rating": 8.6,
+      "multiplayer": true,
+      "image": "https://upload.wikimedia.org/wikipedia/en/thumb/b/ba/Valorant_cover.jpg/250px-Valorant_cover.jpg",
+      "description": "Valorant é um shooter tático competitivo onde dois times de cinco jogadores competem em rodadas estratégicas. Cada agente possui habilidades únicas que mudam a dinâmica das partidas.", 
+      "sequence": []
     },
     {
-      "id": 9,
-      "title": "Five Nights at Freddy's 3",
-      "developer": "Scott Cawthon",
-      "publisher": "Scott Cawthon",
-      "platforms": ["PC", "Mobile"],
-      "genres": ["Horror", "Survival"],
-      "release_year": 2015,
-      "synopsis": "Sobreviva ao animatrônico Springtrap monitorando câmeras.",
-      "rating": 83,
-      "multiplayer": false
+      "id": "clash_royale",
+      "title": "Clash Royale",
+      "developer": "Supercell",
+      "publisher": "Supercell",
+      "genres": ["Estratégia", "Cartas"],
+      "releaseYear": 2016,
+      "rating": 8.3,
+      "multiplayer": true,
+      "image": "https://yt3.googleusercontent.com/Pj9SLzbMxgdbgFSA5MgfTZXjnoRtAj5qUGP8ubjf8AEJpy2nzWLR9Ik__iwQa44bPdvNw5jv5A=s900-c-k-c0x00ffffff-no-rj",
+      "description": "Clash Royale mistura estratégia em tempo real com elementos de jogos de cartas e arenas competitivas. Jogadores escolhem decks e competem para destruir as torres inimigas antes que o tempo acabe.", 
+      "sequence": []
     },
     {
-      "id": 10,
-      "title": "Five Nights at Freddy's 4",
-      "developer": "Scott Cawthon",
-      "publisher": "Scott Cawthon",
-      "platforms": ["PC", "Mobile"],
-      "genres": ["Horror", "Survival"],
-      "release_year": 2015,
-      "synopsis": "Pesadelos animatrônicos em uma casa assustadora.",
-      "rating": 82,
-      "multiplayer": false
+      "id": "fnaf_series",
+      "title": "Five Nights at Freddy's (Franquia)",
+      "developer": "Scott Cawthon / Steel Wool Studios",
+      "publisher": "Scott Cawthon / ScottGames",
+      "genres": ["Horror", "Survival", "Puzzle"],
+      "releaseYear": 2014,
+      "rating": 8.5,
+      "multiplayer": false,
+      "image": "hhttps://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Five_Nights_at_Freddy%27s.svg/500px-Five_Nights_at_Freddy%27s.svg.png",
+      "description": "Five Nights at Freddy's é uma franquia de terror e sobrevivência em que animatrônicos possuídos atacam o jogador durante a noite em locais relacionados à Freddy Fazbear’s Pizza, enquanto segredos sombrios e mistérios sobre assassinatos e possessões são revelados com o tempo.",
+
+      "sequence": [
+        {
+          "id": "fnaf1",
+          "title": "Five Nights at Freddy's",
+          "releaseYear": 2014,
+          "image": "https://yt3.googleusercontent.com/vw3Z6R2poCqAOAwQ5wOiD62PNOgMQzf_QG8Zuw52OZIEWnfpzXJxK6S_kJTvbBCgxgCiDM-5=s540-w390-h540-c-k-c0x00ffffff-no-nd-rj",
+          "description": "No jogo original, você assume o papel de um guarda noturno na pizzaria Freddy Fazbear’s Pizza, tentando sobreviver cinco noites contra animatrônicos assassinos usando câmeras de segurança, portas e luzes para evitar ser capturado pelos robôs."
+        },
+        {
+          "id": "fnaf2",
+          "title": "Five Nights at Freddy's 2",
+          "releaseYear": 2014,
+          "image": "https://static0.gamerantimages.com/wordpress/wp-content/uploads/2024/12/mixcollage-24-dec-2024-12-04-pm-9031.jpg?q=50&fit=crop&w=480&h=600&dpr=1.5",
+          "description": "Continuação direta com nova pizzaria e animatrônicos ‘Toy’, o jogador atua como guarda noturno em 1987, defendendo-se contra inimigos usando uma máscara de Freddy e enfrentando ameaças como Balloon Boy e Mangle enquanto descobre parte do passado sinistro da franquia."
+        },
+        {
+          "id": "fnaf3",
+          "title": "Five Nights at Freddy's 3",
+          "releaseYear": 2015,
+          "image": "https://static.wikia.nocookie.net/freddy-fazbears-pizza/images/7/70/FNaF3_Steam_Greenlight_Icon.png/revision/latest?cb=20150130050641",
+          "description": "Décimo terceiro jogo da sequência principal, ambientado décadas após o fechamento da pizzaria. O jogador é um guarda em ‘Fazbear’s Fright’ — uma atração de horror baseada nos eventos anteriores — enfrentando o animatrônico Springtrap e alucinantes aparições de antigos robôs enquanto tenta sobreviver cada noite."
+        },
+        {
+          "id": "fnaf4",
+          "title": "Five Nights at Freddy's 4",
+          "releaseYear": 2015,
+          "image": "https://static.wikia.nocookie.net/freddy-fazbears-pizza/images/6/6c/Fnaf_4_desktop_icon.jpg/revision/latest?cb=20150723014651",
+          "description": "Diferente dos anteriores, esta entrada se passa no quarto de uma criança, que deve sobreviver às criaturas noturnas habitando seu quarto. Com uma atmosfera ainda mais tensa e mecânicas diferentes, o jogo explora traumas e pesadelos ligados ao lore principal."
+        },
+        {
+          "id": "fnaf_sister_location",
+          "title": "Five Nights at Freddy's: Sister Location",
+          "releaseYear": 2016,
+          "image": "https://static.wikia.nocookie.net/fnaf-sister-location/images/c/c4/SLIcon.jpg/revision/latest?cb=20160801195954",
+          "description": "Aqui, o jogador trabalha como técnico em uma instalação irmã da Fazbear Entertainment chamada Circus Baby’s Entertainment. Diferente dos jogos anteriores, ele pode se mover entre salas para concluir tarefas e deve lidar com animatrônicos poderosos e traiçoeiros enquanto descobre mais sobre os mistérios de Afton e Circus Baby."
+        },
+        {
+          "id": "freddy_fazbears_pizzeria_simulator",
+          "title": "Freddy Fazbear’s Pizzeria Simulator",
+          "releaseYear": 2017,
+          "image": "https://cdn.mobygames.com/covers/9440687-freddy-fazbears-pizzeria-simulator-nintendo-switch-front-cover.jpg",
+          "description": "Misturando simulação de gerenciar seu próprio restaurante com o terror clássico, o jogador investe na pizzaria e deve enfrentar animatrônicos desgastados à noite, enquanto equilibra o negócio e tenta desvendar uma trama que culmina no fechamento definitivo e libertação das almas aprisionadas."
+        },
+        {
+          "id": "ultimate_custom_night",
+          "title": "Ultimate Custom Night",
+          "releaseYear": 2018,
+          "image": "https://image.api.playstation.com/vulcan/img/rnd/202104/2723/psrxE7pFEwTJqOVLuNqwm00N.png",
+          "description": "Liga várias mecânicas e personagens da série em uma experiência customizável extrema: você escolhe quais animatrônicos quer enfrentar e em que nível de dificuldade, sobrevivendo o máximo possível em um escritório preso a um pesadelo infinito com dezenas de inimigos clássicos."
+        },
+        {
+          "id": "security_breach",
+          "title": "Five Nights at Freddy's: Security Breach",
+          "releaseYear": 2021,
+          "image": "https://static.wikia.nocookie.net/freddy-fazbears-pizza/images/f/f9/Security_breach_poster.jpg/revision/latest?cb=20211202165652",
+          "description": "Neste título mais ambicioso, você controla um garoto chamado Gregory preso dentro do enorme Freddy Fazbear’s Mega Pizzaplex, onde deve explorar livremente enquanto evita animatrônicos hostis e descobre segredos por trás da misteriosa Vanny e dos robôs glam rock."
+        },
+        {
+          "id": "security_breach_ruin",
+          "title": "FNAF: Security Breach – Ruin",
+          "releaseYear": 2023,
+          "image": "https://i.redd.it/q612rnrnoq291.png",
+          "description": "Conteúdo adicional de *Security Breach* focado em enfrentar as consequências do caos dentro do Mega Pizzaplex, com novos desafios e cenários que aprofundam ainda mais o terror em torno da narrativa central."
+        },
+        {
+          "id": "secret_of_the_mimic",
+          "title": "Five Nights at Freddy’s: Secret of the Mimic",
+          "releaseYear": 2025,
+          "image": "https://static.wikia.nocookie.net/freddy-fazbears-pizza/images/c/cb/SecretoftheMimic_CoverKeyArt.jpg/revision/latest/scale-to-width-down/250?cb=20250213015423",
+          "description": "Um título de terror em primeira pessoa onde o jogador explora uma oficina abandonada em busca de tecnologia de um endoesqueleto experimental chamado Mimic, enfrentando ameaças assustadoras e desvendando segredos antigos da corporação Fazbear."
+        }
+      ]
     },
     {
-      "id": 11,
-      "title": "Five Nights at Freddy's: Sister Location",
-      "developer": "Scott Cawthon",
-      "publisher": "Scott Cawthon",
-      "platforms": ["PC", "Mobile"],
-      "genres": ["Horror", "Survival"],
-      "release_year": 2016,
-      "synopsis": "Explore uma nova localização cheia de animatrônicos perigosos.",
-      "rating": 83,
-      "multiplayer": false
-    },
-    {
-      "id": 12,
-      "title": "Five Nights at Freddy's 6",
-      "developer": "Scott Cawthon",
-      "publisher": "Scott Cawthon",
-      "platforms": ["PC", "Mobile"],
-      "genres": ["Horror", "Survival"],
-      "release_year": 2016,
-      "synopsis": "Combine gerenciamento e sobrevivência em experiência assustadora.",
-      "rating": 81,
-      "multiplayer": false
-    },
-    {
-      "id": 13,
-      "title": "Five Nights at Freddy's: Ultimate Custom Night",
-      "developer": "Scott Cawthon",
-      "publisher": "Scott Cawthon",
-      "platforms": ["PC"],
-      "genres": ["Horror", "Survival"],
-      "release_year": 2018,
-      "synopsis": "Customize os animatrônicos e enfrente desafios intensos de terror.",
-      "rating": 86,
-      "multiplayer": false
-    },
-    {
-      "id": 14,
-      "title": "Five Nights at Freddy's: Security Breach",
-      "developer": "Steel Wool Studios",
-      "publisher": "ScottGames",
-      "platforms": ["PC", "PS4", "PS5"],
-      "genres": ["Horror", "Survival"],
-      "release_year": 2021,
-      "synopsis": "Explore o shopping e sobreviva aos animatrônicos em tempo real.",
-      "rating": 86,
-      "multiplayer": false
-    },
-    {
-      "id": 15,
-      "title": "Five Nights at Freddy's: DLC Ruin",
-      "developer": "Steel Wool Studios",
-      "publisher": "ScottGames",
-      "platforms": ["PC", "PS5"],
-      "genres": ["Horror", "Survival"],
-      "release_year": 2023,
-      "synopsis": "Nova expansão com animatrônicos e áreas assustadoras.",
-      "rating": 84,
-      "multiplayer": false
-    },
-    {
-      "id": 16,
-      "title": "Five Nights at Freddy's: Secret of the Mimic",
-      "developer": "Steel Wool Studios",
-      "publisher": "ScottGames",
-      "platforms": ["PC", "PS5"],
-      "genres": ["Horror", "Survival"],
-      "release_year": 2024,
-      "synopsis": "Trama misteriosa com novos enigmas e terror.",
-      "rating": 85,
-      "multiplayer": false
-    },
-    {
-      "id": 17,
-      "title": "Poppy Playtime Chapter 1",
+       "id": "poppy_playtime_series",
+      "title": "Poppy Playtime (Franquia)",
       "developer": "Mob Entertainment",
       "publisher": "Mob Entertainment",
-      "platforms": ["PC"],
-      "genres": ["Horror", "Adventure"],
-      "release_year": 2021,
-      "synopsis": "Explore uma fábrica abandonada e enfrente brinquedos assustadores.",
-      "rating": 88,
-      "multiplayer": false
+      "genres": ["Horror", "Survival", "Puzzle"],
+      "releaseYear": 2021,
+      "rating": 8.0,
+      "multiplayer": false,
+      "image": "https://images.gamegator.net/co90hm",
+      "description": "Poppy Playtime é uma série de horror onde você retorna como um ex-funcionário à fábrica abandonada da Playtime Co., um lugar que abriga brinquedos macabros e enigmas assustadores. Cada capítulo revela novos horrores e segredos perturbadores da corporação que um dia foi realeza no mercado de brinquedos.",
+      "sequence": [
+        {
+          "id": "poppy_playtime_ch1",
+          "title": "Poppy Playtime: Capítulo 1 – Um Abraço Apertado",
+          "releaseYear": 2021,
+          "image": "https://m.media-amazon.com/images/M/MV5BZDAxNjY3NWUtNTc0Mi00MjNiLTlhZWMtZWNjNGIxMWZmMjkwXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+          "description": "Como um ex-funcionário da Playtime Co., você retorna à fábrica muitos anos depois que todos desapareceram, explorando corredores sombrios e usando seu GrabPack para resolver quebra-cabeças enquanto evita brinquedos hostis que ganharam vida e caçam intrusos. :contentReference[oaicite:1]{index=1}"
+        },
+        {
+          "id": "poppy_playtime_ch2",
+          "title": "Poppy Playtime: Capítulo 2 – Uma Mosca na Teia",
+          "releaseYear": 2022,
+          "image": "https://static.wikia.nocookie.net/pplaytime/images/d/d8/Ch2ConsoleIcon.png/revision/latest/scale-to-width/360?cb=20250107050113",
+          "description": "Após libertar Poppy, você deve descer ainda mais fundo na fábrica em busca de uma saída. Quebra-cabeças maiores, inimigos másculos e desafios intensos aguardam enquanto a ameaça se intensifica e a busca pela verdade continua nas profundezas da Playtime Co. :contentReference[oaicite:2]{index=2}"
+        },
+        {
+          "id": "poppy_playtime_ch3",
+          "title": "Poppy Playtime: Capítulo 3 – Sono Profundo",
+          "releaseYear": 2024,
+          "image": "https://static.wikia.nocookie.net/pplaytime/images/9/9b/Ch3ConsoleIcon.png/revision/latest/scale-to-width/360?cb=20250107050124",
+          "description": "Depois de um descarrilamento perigoso, o jogador acorda na área subterrânea da fábrica chamada Playcare, que abriga brinquedos grotescos. A missão é escapar do território guardado pelo CatNap, enquanto desvenda a conexão entre os monstros e o misterioso Protótipo, equipando ferramentas como o GrabPack 2.0 e enfrentando horrores reais. :contentReference[oaicite:3]{index=3}"
+        },
+        {
+          "id": "poppy_playtime_ch4",
+          "title": "Poppy Playtime: Capítulo 4 – Porto Seguro",
+          "releaseYear": 2025,
+          "image": "https://static.wikia.nocookie.net/pplaytime/images/5/53/PPC4-ConsoleImage.png/revision/latest?cb=20250620031910",
+          "description": "No quarto capítulo da franquia, você é empurrado mais fundo nas instalações da fábrica, explorando territórios desconhecidos e lutando pela sobrevivência. Novos inimigos, aliados e segredos ainda mais perturbadores sobre a Playtime Co. são revelados, elevando ainda mais a tensão e a narrativa. :contentReference[oaicite:4]{index=4}"
+        },
+        {
+          "id": "poppy_playtime_ch5",
+          "title": "Poppy Playtime: Capítulo 5 – Broken Things",
+          "releaseYear": 2026,
+          "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbW139PIgV4qZrL7I9fbV9WgGM4NndwCC0zw&s",
+          "description": "Continuando a narrativa sombria da série, este capítulo promete aprofundar ainda mais o conflito entre o jogador, Poppy e o Protótipo, revelando mais sobre o destino dos trabalhadores desaparecidos e os verdadeiros horrores da Playtime Co."
+        }
+      ]
     },
     {
-      "id": 18,
-      "title": "Poppy Playtime Chapter 2",
-      "developer": "Mob Entertainment",
-      "publisher": "Mob Entertainment",
-      "platforms": ["PC"],
-      "genres": ["Horror", "Adventure"],
-      "release_year": 2022,
-      "synopsis": "Novos puzzles e monstros na fábrica abandonada.",
-      "rating": 87,
-      "multiplayer": false
-    },
-    {
-      "id": 19,
-      "title": "Poppy Playtime Chapter 3",
-      "developer": "Mob Entertainment",
-      "publisher": "Mob Entertainment",
-      "platforms": ["PC"],
-      "genres": ["Horror", "Adventure"],
-      "release_year": 2023,
-      "synopsis": "Continue desvendando os mistérios da fábrica assombrada.",
-      "rating": 87,
-      "multiplayer": false
-    },
-    {
-      "id": 20,
-      "title": "Poppy Playtime Chapter 4",
-      "developer": "Mob Entertainment",
-      "publisher": "Mob Entertainment",
-      "platforms": ["PC"],
-      "genres": ["Horror", "Adventure"],
-      "release_year": 2024,
-      "synopsis": "Mais segredos e brinquedos maléficos para enfrentar.",
-      "rating": 86,
-      "multiplayer": false
-    },
-    {
-      "id": 21,
-      "title": "Poppy Playtime Chapter 5",
-      "developer": "Mob Entertainment",
-      "publisher": "Mob Entertainment",
-      "platforms": ["PC"],
-      "genres": ["Horror", "Adventure"],
-      "release_year": 2026,
-      "synopsis": "Capítulo futuro, trama e desafios ainda não revelados.",
-      "rating": 85,
-      "multiplayer": false
+      "id": "red_dead_redemption",
+      "title": "Red Dead Redemption (Franquia)",
+      "developer": "Rockstar Games",
+      "publisher": "Rockstar Games",
+      "genres": ["Ação-aventura", "Mundo Aberto"],
+      "releaseYear": 2010,
+      "rating": 9.2,
+      "multiplayer": true,
+      "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Red-Dead-Redemption-Logo.svg/3840px-Red-Dead-Redemption-Logo.svg.png",
+      "description": "A série Red Dead Redemption imerge jogadores no Velho Oeste com narrativas profundas e ambientes vivos. Cada título é elogiado pela ação cinematográfica e mundo interativo.", 
+      "sequence": [
+        {
+          "id": "red_dead_redemption_1",
+          "title": "Red Dead Redemption",
+          "releaseYear": 2010,
+          "image": "https://upload.wikimedia.org/wikipedia/en/thumb/a/a7/Red_Dead_Redemption.jpg/250px-Red_Dead_Redemption.jpg",
+          "description": "Um clássico do gênero de mundo aberto seguindo John Marston em sua busca por redenção."
+        },
+        {
+          "id": "red_dead_redemption_2",
+          "title": "Red Dead Redemption II",
+          "releaseYear": 2018,
+          "image": "https://image.api.playstation.com/cdn/UP1004/CUSA03041_00/Hpl5MtwQgOVF9vJqlfui6SDB5Jl4oBSq.png",
+          "description": "A prequela aclamada da série focada em Arthur Morgan e a gangue Van der Linde."
+        }
+      ]
     }
   ]
 }

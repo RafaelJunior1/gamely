@@ -20,7 +20,7 @@ const { width } = Dimensions.get('window');
 
 const FILTER_ITEM_WIDTH = 90;
 const TYPE_ITEM_WIDTH = 100;
-const MAX_RECORD_DURATION = 15000;
+const MAX_RECORD_DURATION = 30000;
 
 const FILTERS = [
   { id: 'normal', icon: require('../../../assets/filters/normal.png') },
@@ -119,7 +119,7 @@ export default function CreateCamera() {
         onPressOut={handleFilterPressOut}
         style={[
           styles.filterItem,
-          { opacity: active ? 1 : 0.4, transform: [{ scale: active ? 1.2 : 0.95 }] },
+          { opacity: active ? 1 : 0.4, transform: [{ scale: active ? 1.1 : 0.95 }] },
         ]}
       >
         <Image source={item.icon} style={styles.filterIcon} />
@@ -162,9 +162,9 @@ export default function CreateCamera() {
   };
 
   const handlePinch = event => {
-    let newZoom = zoom + (event.nativeEvent.scale - 1) * 0.2;
+    let newZoom = zoom + (event.nativeEvent.scale - 1) * 0.1;
     if (newZoom < 0) newZoom = 0;
-    if (newZoom > 1) newZoom = 1;
+    if (newZoom > 1) newZoom = 0.5;
     setZoom(newZoom);
   };
 
