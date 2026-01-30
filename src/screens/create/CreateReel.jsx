@@ -1,114 +1,200 @@
-// src/screens/CreateReel.jsx
-import { Audio, Video } from 'expo-av';
-import * as ImagePicker from 'expo-image-picker';
-import { useContext, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons'
+import Slider from '@react-native-community/slider'
+import { Video } from 'expo-av'
+import * as ImagePicker from 'expo-image-picker'
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
+import { useEffect, useRef, useState } from 'react'
 import {
+  Alert,
   Dimensions,
-  FlatList,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View
-} from 'react-native';
-import { ThemeContext } from '../../context/ThemeContext';
+} from 'react-native'
+import { useAuth } from '../../context/AuthContext'
+import { uploadImageToCloudinary } from '../../services/cloudinary'
+import { db } from '../../services/firebase'
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window')
 
-export default function CreateReel() {
-  const { colors } = useContext(ThemeContext);
+export default function CreateReel({ navigation, route }) {
+  const { user } = useAuth()
+  const cameraVideo = route.params?.uri || null
 
-  const [clips, setClips] = useState([]); // vídeos
-  const [caption, setCaption] = useState('');
-  const [selectedMusic, setSelectedMusic] = useState(null);
-  const [previewAudio, setPreviewAudio] = useState(null);
+  const videoRef = useRef(null)
 
-  const pickVideo = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
+  const [videoUri, setVideoUri] = useState(cameraVideo)
+  const [caption, setCaption] = useState('')
+  const [gameName, setGameName] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [duration, setDuration] = useState(0)
+  const [position, setPosition] = useState(0)
+
+  useEffect(() => {
+    if (!videoUri) pickFromGallery()
+  }, [])
+
+  const pickFromGallery = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-      allowsMultipleSelection: true,
+      allowsEditing: true,
       quality: 1,
-    });
+    })
 
-    if (!result.canceled) setClips(result.assets || [result]);
-  };
+    if (!result.canceled) {
+      setVideoUri(result.assets[0].uri)
+    } else {
+      navigation.goBack()
+    }
+  }
 
-  const searchMusic = (query) => {
-    const mockResults = [
-      { id: '1', name: 'Epic Gamer', artist: 'DJ Shadow', preview: 'https://p.scdn.co/mp3-preview/...' },
-      { id: '2', name: 'Battle Theme', artist: 'EpicSound', preview: 'https://p.scdn.co/mp3-preview/...' },
-    ];
-    return mockResults.filter(m => m.name.toLowerCase().includes(query.toLowerCase()));
-  };
+  const publishReel = async () => {
+    if (!videoUri || !gameName.trim()) {
+      Alert.alert('Erro', 'Informe o nome do jogo')
+      return
+    }
 
-  const selectMusic = async (music) => {
-    setSelectedMusic(music);
-    if (previewAudio) await previewAudio.unloadAsync();
-    const { sound } = await Audio.Sound.createAsync({ uri: music.preview });
-    setPreviewAudio(sound);
-    await sound.playAsync();
-  };
+    if (!user) {
+      Alert.alert('Erro', 'Usuário não logado')
+      return
+    }
 
-  const handlePost = () => {
-    if (clips.length === 0) return alert('Escolha ao menos um clipe!');
-    const reelData = { type: 'reel', clips, caption, music: selectedMusic, createdAt: new Date() };
-    console.log('Reel enviado:', reelData);
-    alert('Reel enviado! (mock)');
-    setClips([]);
-    setCaption('');
-    setSelectedMusic(null);
-    if (previewAudio) previewAudio.stopAsync();
-  };
+    setLoading(true)
 
-  const renderClip = ({ item }) => (
-    <Video
-      source={{ uri: item.uri }}
-      style={{ width: width - 40, height: 300, borderRadius: 12, marginRight: 10 }}
-      resizeMode="cover"
-      useNativeControls
-      isLooping
-    />
-  );
+    try {
+      const videoUrl = await uploadImageToCloudinary(videoUri, 'reels')
+
+      await addDoc(collection(db, 'reels'), {
+        videoUrl,
+        caption,
+        game: gameName,
+        likes: [],
+        commentsCount: 0,
+        views: 0,
+        createdAt: serverTimestamp(),
+        userId: user.uid,
+        userName: user.displayName || '',
+        userAvatar: user.photoURL || '',
+      })
+
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Home' }],
+      })
+    } catch (e) {
+      console.log(e)
+      Alert.alert('Erro', 'Falha ao publicar reel')
+    }
+
+    setLoading(false)
+  }
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <TouchableOpacity style={[styles.pickBtn, { backgroundColor: colors.buttonBg }]} onPress={pickVideo}>
-        <Text style={{ color: '#fff', fontWeight: '600' }}>Escolher Vídeo(s)</Text>
-      </TouchableOpacity>
-
-      {clips.length > 0 && (
-        <FlatList
-          data={clips}
-          horizontal
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={renderClip}
-          style={{ marginVertical: 10, paddingLeft: 20 }}
+    <View style={styles.container}>
+      {videoUri && (
+        <Video
+          ref={videoRef}
+          source={{ uri: videoUri }}
+          style={styles.video}
+          resizeMode="cover"
+          shouldPlay
+          isLooping
+          onPlaybackStatusUpdate={(status) => {
+            if (status.isLoaded) {
+              setDuration(status.durationMillis || 0)
+              setPosition(status.positionMillis || 0)
+            }
+          }}
         />
       )}
 
-      <View style={{ paddingHorizontal: 20, marginTop: 10 }}>
-        <Text style={{ color: colors.textPrimary, marginBottom: 5 }}>Música (Spotify)</Text>
-        <ScrollView horizontal>
-          {searchMusic('Epic').map(music => (
-            <TouchableOpacity key={music.id} onPress={() => selectMusic(music)} style={{ marginRight: 10 }}>
-              <View style={{ backgroundColor: colors.cardBg, padding: 10, borderRadius: 10 }}>
-                <Text style={{ color: colors.textPrimary }}>{music.name}</Text>
-                <Text style={{ color: colors.textSecondary }}>{music.artist}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+      <TouchableOpacity style={styles.close} onPress={() => navigation.goBack()}>
+        <Ionicons name="close" size={30} color="#fff" />
+      </TouchableOpacity>
+
+      <View style={styles.timeline}>
+        <Slider
+          minimumValue={0}
+          maximumValue={duration}
+          value={position}
+          onValueChange={(value) => {
+            videoRef.current?.setPositionAsync(value)
+          }}
+          minimumTrackTintColor="#fff"
+          maximumTrackTintColor="rgba(255,255,255,0.3)"
+          thumbTintColor="#fff"
+        />
       </View>
 
-      <TouchableOpacity style={[styles.postBtn, { backgroundColor: colors.buttonBg }]} onPress={handlePost}>
-        <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>POSTAR REEL</Text>
-      </TouchableOpacity>
-    </ScrollView>
-  );
+      <View style={styles.form}>
+
+        <TouchableOpacity
+          style={[styles.publish, loading && { opacity: 0.6 }]}
+          disabled={loading}
+          onPress={publishReel}
+        >
+          <Text style={styles.publishText}>
+            {loading ? 'Publicando...' : 'Publicar Reel'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  )
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  pickBtn: { marginHorizontal: 20, padding: 15, borderRadius: 12, alignItems: 'center', marginBottom: 15 },
-  postBtn: { margin: 20, padding: 15, borderRadius: 12, alignItems: 'center', marginBottom: 50 },
-});
+  container: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+
+  video: {
+    width: '100%',
+    height: '100%',
+
+  },
+
+  close: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 10,
+  },
+
+  timeline: {
+    position: 'absolute',
+    bottom: 120,
+    width: '100%',
+    paddingHorizontal: 20,
+  },
+
+  form: {
+    position: 'absolute',
+    bottom: 30,
+    width: '100%',
+    paddingHorizontal: 20,
+  },
+
+  input: {
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    color: '#fff',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    fontSize: 15,
+  },
+
+  publish: {
+    backgroundColor: '#7C4DFF',
+    paddingVertical: 14,
+    borderRadius: 30,
+    alignItems: 'center',
+  },
+
+  publishText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+})

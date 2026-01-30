@@ -1,6 +1,6 @@
 import * as ImagePicker from 'expo-image-picker';
-import { doc, updateDoc } from 'firebase/firestore';
-import { useContext, useState } from 'react';
+import { collection, doc, getDocs, updateDoc } from 'firebase/firestore';
+import { useContext, useEffect, useState } from 'react';
 import {
   Alert,
   Image,
@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import { AuthContext } from '../../context/AuthContext';
 import { ThemeContext } from '../../context/ThemeContext';
-import GAMES from '../../data/games.json';
 import { uploadImageToCloudinary } from '../../services/cloudinary';
 import { db } from '../../services/firebase';
 
@@ -28,7 +27,26 @@ export default function EditProfile({ navigation, route }) {
   const [bio, setBio] = useState(profile.bio);
   const [selectedGames, setSelectedGames] = useState(profile.games || []);
   const [search, setSearch] = useState('');
+  const [allGames, setAllGames] = useState([]);
   const [filteredGames, setFilteredGames] = useState([]);
+
+  useEffect(() => {
+    const loadGames = async () => {
+      const titlesSet = new Set();
+      const gameSnap = await getDocs(collection(db, 'games'));
+      gameSnap.forEach(doc => {
+        const data = doc.data();
+        if (data?.title) titlesSet.add(data.title);
+        if (Array.isArray(data.sequence)) {
+          data.sequence.forEach(seq => {
+            if (seq?.title) titlesSet.add(seq.title);
+          });
+        }
+      });
+      setAllGames(Array.from(titlesSet));
+    };
+    loadGames();
+  }, []);
 
   const pickImage = async (type) => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -56,8 +74,7 @@ export default function EditProfile({ navigation, route }) {
       setFilteredGames([]);
       return;
     }
-    const filtered = GAMES.videogames
-      .map(g => g.title)
+    const filtered = allGames
       .filter(title => title.toLowerCase().includes(text.toLowerCase()) && !selectedGames.includes(title));
     setFilteredGames(filtered);
   };
@@ -137,6 +154,7 @@ export default function EditProfile({ navigation, route }) {
         <TextInput
           style={[styles.input, { backgroundColor: colors.cardBg, color: colors.textPrimary }]}
           placeholder="Pesquise jogos..."
+          placeholderTextColor={colors.textSecondary}
           value={search}
           onChangeText={handleSearch}
         />

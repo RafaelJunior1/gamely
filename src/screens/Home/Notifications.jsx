@@ -1,23 +1,23 @@
 import { Ionicons } from '@expo/vector-icons';
 import {
-    collection,
-    onSnapshot,
-    orderBy,
-    query,
-    where,
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
 } from 'firebase/firestore';
 import { useContext, useEffect, useState } from 'react';
 import {
-    FlatList,
-    Image,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { AuthContext } from '../context/AuthContext';
-import { ThemeContext } from '../context/ThemeContext';
-import { db } from '../services/firebase';
+import { AuthContext } from '../../context/AuthContext';
+import { ThemeContext } from '../../context/ThemeContext';
+import { db } from '../../services/firebase';
 
 export default function Notifications({ navigation }) {
   const { colors } = useContext(ThemeContext);
@@ -63,7 +63,7 @@ export default function Notifications({ navigation }) {
             source={
               item.avatar
                 ? { uri: item.avatar }
-                : require('../../assets/avatars/default.png')
+                : require('../../../assets/avatars/default.png')
             }
             style={styles.avatar}
           />

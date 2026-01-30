@@ -1,9 +1,8 @@
-// /navigation/HomeNavigator.jsx
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { useContext } from 'react';
 import DrawerContent from '../components/DrawerContent';
 import { ThemeContext } from '../context/ThemeContext';
-import Home from '../screens/Home';
+import Home from '../screens/Home/Home';
 
 const Drawer = createDrawerNavigator();
 

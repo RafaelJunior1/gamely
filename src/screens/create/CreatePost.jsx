@@ -1,91 +1,168 @@
-import { Video } from 'expo-av';
-import * as ImagePicker from 'expo-image-picker';
+import { Ionicons } from '@expo/vector-icons';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { useContext, useState } from 'react';
-import { Dimensions, FlatList, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import MusicLibrary from '../../components/MusicLibrary';
+import {
+  Alert,
+  FlatList,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { AuthContext } from '../../context/AuthContext';
 import { ThemeContext } from '../../context/ThemeContext';
+import { db } from '../../services/firebase';
 
-const { width } = Dimensions.get('window');
-
-export default function CreatePost() {
+export default function CreatePost({ navigation, route }) {
   const { colors } = useContext(ThemeContext);
-  const [type, setType] = useState('Post');
-  const [media, setMedia] = useState([]);
-  const [caption, setCaption] = useState('');
-  const [hashtags, setHashtags] = useState('');
-  const [selectedMusic, setSelectedMusic] = useState(null);
+  const { user } = useContext(AuthContext);
+  const { uri } = route.params;
 
-  const pickMedia = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsMultipleSelection: true,
-      quality: 1,
-    });
+  const [images, setImages] = useState(uri ? [uri] : []);
+  const [text, setText] = useState('');
+  const [search, setSearch] = useState('');
+  const [filteredGames, setFilteredGames] = useState([]);
+  const [allGames, setAllGames] = useState([]);
+  const [selectedGame, setSelectedGame] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-    if (!result.canceled) {
-      if (result.assets) setMedia(result.assets);
-      else setMedia([result]);
+  const handleSearch = text => {
+    setSearch(text);
+    if (!text) {
+      setFilteredGames([]);
+      return;
     }
+    const filtered = allGames.filter(g =>
+      g.toLowerCase().includes(text.toLowerCase())
+    );
+    setFilteredGames(filtered);
   };
 
-  const handlePost = () => {
-    if (!media.length) return alert('Escolha ao menos uma mídia!');
-    const postData = { type, media, caption, hashtags, music: selectedMusic, createdAt: new Date() };
-    console.log('Post enviado:', postData);
-    alert('Post enviado! (mock)');
-    setMedia([]); setCaption(''); setHashtags(''); setSelectedMusic(null);
+  const selectGame = game => {
+    setSelectedGame(game);
+    setSearch('');
+    setFilteredGames([]);
   };
 
-  const renderMediaItem = ({ item }) => {
-    if (item.type?.startsWith('video')) {
-      return <Video source={{ uri: item.uri }} style={{ width: width - 40, height: 300, borderRadius: 12, marginRight: 10 }} resizeMode="cover" useNativeControls isLooping />;
+  const removeImage = index => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const addImage = url => {
+    setImages(prev => [...prev, url]);
+  };
+
+  const publishPost = async () => {
+    if (loading) return;
+    if (images.length === 0) {
+      Alert.alert('Erro', 'Selecione pelo menos uma imagem');
+      return;
     }
-    return <Image source={{ uri: item.uri }} style={{ width: 100, height: 100, borderRadius: 12, marginRight: 10 }} />;
+    setLoading(true);
+    try {
+      await addDoc(collection(db, 'post'), {
+        userId: user.uid,
+        images: images,
+        text: text || null,
+        game: selectedGame || null,
+        createdAt: serverTimestamp(),
+        likes: [],
+        comments: [],
+      });
+
+      navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+    } catch (e) {
+      console.log('Erro ao publicar post:', e);
+      Alert.alert('Erro', 'Falha ao publicar o post');
+    }
+    setLoading(false);
   };
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Tipo de publicação */}
-      <View style={styles.typeSelector}>
-        {['Post','Reel','Story'].map(t => (
-          <TouchableOpacity key={t} onPress={() => setType(t)} style={[styles.typeBtn, type === t && { backgroundColor: colors.buttonBg }]}>
-            <Text style={{ color: type === t ? '#fff' : colors.textPrimary, fontWeight: '600' }}>{t}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Botões de mídia */}
-      <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginVertical: 10 }}>
-        <TouchableOpacity style={[styles.pickBtn, { backgroundColor: colors.buttonBg }]} onPress={pickMedia}>
-          <Text style={{ color: '#fff', fontWeight: '600' }}>Escolher da Galeria</Text>
+      <View style={styles.topBar}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Ionicons name="close" size={32} color="#fff" />
         </TouchableOpacity>
       </View>
 
-      {/* Preview mídia */}
-      {media.length > 0 && <FlatList data={media} horizontal keyExtractor={(item,i)=>i.toString()} renderItem={renderMediaItem} style={{ marginVertical: 10, paddingLeft: 20 }} />}
+      <FlatList
+        data={images}
+        horizontal
+        keyExtractor={(_, i) => i.toString()}
+        renderItem={({ item, index }) => (
+          <View style={styles.imageWrapper}>
+            <Image source={{ uri: item }} style={styles.image} />
+            <TouchableOpacity style={styles.removeBtn} onPress={() => removeImage(index)}>
+              <Ionicons name="close-circle" size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        )}
+      />
 
-      {/* Inputs */}
-      <View style={{ paddingHorizontal: 20 }}>
-        <TextInput placeholder="Legenda" placeholderTextColor={colors.textSecondary} value={caption} onChangeText={setCaption} multiline style={[styles.input, { color: colors.textPrimary, borderColor: colors.textSecondary }]} />
-        <TextInput placeholder="#hashtags" placeholderTextColor={colors.textSecondary} value={hashtags} onChangeText={setHashtags} style={[styles.input, { color: colors.textPrimary, borderColor: colors.textSecondary }]} />
-      </View>
+      <TextInput
+        style={[styles.textInput, { backgroundColor: colors.cardBg, color: colors.textPrimary }]}
+        placeholder="Escreva algo..."
+        placeholderTextColor={colors.textSecondary}
+        value={text}
+        onChangeText={setText}
+        multiline
+      />
 
-      {/* Biblioteca de músicas */}
-      <MusicLibrary query="" selectedMusic={selectedMusic} onSelect={setSelectedMusic} />
+      <TextInput
+        style={[styles.textInput, { backgroundColor: colors.cardBg, color: colors.textPrimary }]}
+        placeholder="Pesquise um jogo..."
+        value={search}
+        onChangeText={handleSearch}
+      />
+      {filteredGames.length > 0 && (
+        <View style={[styles.searchResults, { backgroundColor: colors.cardBg }]}>
+          {filteredGames.map(game => (
+            <TouchableOpacity key={game} onPress={() => selectGame(game)} style={styles.resultItem}>
+              <Text style={{ color: colors.textPrimary }}>{game}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+      {selectedGame && (
+        <View style={[styles.selectedGame, { backgroundColor: colors.buttonBg }]}>
+          <Text style={{ color: '#fff' }}>{selectedGame}</Text>
+          <TouchableOpacity onPress={() => setSelectedGame(null)}>
+            <Text style={{ color: '#fff', marginLeft: 6 }}>✕</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
-      {/* Botão postar */}
-      <TouchableOpacity style={[styles.postBtn, { backgroundColor: colors.buttonBg }]} onPress={handlePost}>
-        <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>POSTAR</Text>
+      <TouchableOpacity
+        style={[styles.publishBtn, { backgroundColor: colors.buttonBg }]}
+        onPress={publishPost}
+        disabled={loading}
+      >
+        <Text style={{ color: '#fff', fontWeight: '700' }}>{loading ? 'Publicando...' : 'Publicar'}</Text>
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  typeSelector: { flexDirection: 'row', justifyContent: 'space-around', padding: 20 },
-  typeBtn: { paddingVertical: 8, paddingHorizontal: 20, borderRadius: 25, borderWidth: 1 },
-  pickBtn: { padding: 15, borderRadius: 12, alignItems: 'center', marginHorizontal: 20 },
-  input: { borderWidth: 1, borderRadius: 12, padding: 10, marginVertical: 5 },
-  postBtn: { margin: 20, padding: 15, borderRadius: 12, alignItems: 'center', marginBottom: 50 },
+  container: { flex: 1, padding: 20 },
+  topBar: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 30 },
+  imageWrapper: { marginRight: 10 },
+  image: { width: 100, height: 120, borderRadius: 12, lineHeight: 90 },
+  removeBtn: { position: 'absolute', top: -8, right: -8 },
+  textInput: { borderRadius: 12, padding: 12, fontSize: 16, marginVertical: 10 },
+  searchResults: { maxHeight: 900, borderRadius: 12 },
+  resultItem: { padding: 10 },
+  selectedGame: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginVertical: 8,
+  },
+  publishBtn: { paddingVertical: 14, borderRadius: 12, alignItems: 'center', marginTop: 20 },
 });

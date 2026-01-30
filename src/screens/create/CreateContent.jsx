@@ -1,131 +1,188 @@
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { Audio } from 'expo-av';
-import { useContext, useState } from 'react';
-import { Dimensions, Image, PanResponder, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { ThemeContext } from '../../context/ThemeContext';
+import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { useState } from 'react';
+import {
+  Alert,
+  Dimensions,
+  FlatList,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { useAuth } from '../../context/AuthContext';
+import { uploadImageToCloudinary } from '../../services/cloudinary';
+import { db } from '../../services/firebase';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
-export default function CreateStory() {
-  const route = useRoute();
-  const navigation = useNavigation();
-  const { colors } = useContext(ThemeContext);
+export default function CreatePost({ navigation }) {
+  const { user, loading } = useAuth();
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [caption, setCaption] = useState('');
+  const [uploading, setUploading] = useState(false);
 
-  const media = route.params?.media?.[0];
-  const [elements, setElements] = useState([]);
-  const [addingText, setAddingText] = useState(false);
-  const [textInput, setTextInput] = useState('');
-  const [musicPreview, setMusicPreview] = useState(null);
+  if (loading) return null;
+  if (!user) return null;
 
-  if (!media) return <View style={styles.center}><Text>Erro ao carregar Story</Text></View>;
-
-  const addElement = (type, content) => {
-    const newEl = {
-      id: Date.now().toString(),
-      type,
-      content,
-      pan: { x: width / 4, y: height / 3 },
-    };
-    setElements([...elements, newEl]);
-
-    if(type === 'music' && musicPreview){
-      musicPreview.stopAsync();
-    }
-    if(type === 'music'){
-      Audio.Sound.createAsync({uri: content}).then(({sound}) => { setMusicPreview(sound); sound.playAsync(); });
-    }
+  const confirmExit = () => {
+    Alert.alert(
+      'Descartar post?',
+      'Tem certeza que deseja sair? As imagens serão perdidas.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Descartar', style: 'destructive', onPress: () => navigation.goBack() },
+      ]
+    );
   };
 
-  const renderElement = (el) => {
-    const panResponder = PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onPanResponderMove: (_, gesture) => {
-        el.pan.x = gesture.moveX - 50;
-        el.pan.y = gesture.moveY - 20;
-        setElements([...elements]);
-      },
-      onPanResponderRelease: () => {},
+  const pickImages = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      quality: 1,
     });
-
-    if(el.type === 'text'){
-      return (
-        <View key={el.id} style={[styles.elementWrapper, {top: el.pan.y, left: el.pan.x}]} {...panResponder.panHandlers}>
-          <Text style={[styles.storyText, {color: colors.textPrimary}]}>{el.content}</Text>
-        </View>
-      );
-    }
-
-    if(el.type === 'gif' || el.type === 'sticker'){
-      return (
-        <View key={el.id} style={[styles.elementWrapper, {top: el.pan.y, left: el.pan.x}]} {...panResponder.panHandlers}>
-          <Text style={{fontSize:50}}>{el.content}</Text>
-        </View>
-      );
-    }
-
-    return null;
+    if (!result.canceled) return;
+    setSelectedImages(result.assets.map(a => a.uri));
   };
+
+  const uploadAllImages = async () => {
+    const urls = [];
+    for (let uri of selectedImages) {
+      const url = await uploadImageToCloudinary(uri, 'posts');
+      if (url) urls.push(url);
+    }
+    return urls;
+  };
+
+  const publishPost = async () => {
+    if (!selectedImages.length) {
+      Alert.alert('Selecione pelo menos uma imagem.');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const urls = await uploadAllImages();
+
+      await addDoc(collection(db, 'posts'), {
+        userId: user.uid,
+        userName: user.displayName,
+        userPhoto: user.photoURL,
+        images: urls,
+        caption,
+        likes: [],
+        comments: [],
+        createdAt: serverTimestamp(),
+      });
+
+      navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+    } catch (error) {
+      console.log('Erro ao publicar post:', error);
+      Alert.alert('Erro', 'Não foi possível publicar o post.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const renderImage = ({ item }) => (
+    <Image source={{ uri: item }} style={styles.previewImage} />
+  );
 
   return (
     <View style={styles.container}>
-      <Image source={{ uri: media.uri }} style={styles.background} resizeMode="cover" />
-
-      {elements.map(renderElement)}
-
-      <View style={styles.sideMenu}>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => setAddingText(true)}>
-          <Text style={styles.iconText}>T</Text>
+      <View style={styles.topBar}>
+        <TouchableOpacity onPress={confirmExit}>
+          <Ionicons name="close" size={32} color="#000" />
         </TouchableOpacity>
-
-        <TouchableOpacity style={styles.iconBtn} onPress={() => addElement('gif','🎉')}>
-          <Text style={styles.iconText}>GIF</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.iconBtn} onPress={() => addElement('sticker','❤️')}>
-          <Text style={styles.iconText}>ST</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.iconBtn} onPress={() => addElement('music','https://p.scdn.co/mp3-preview/...')}>
-          <Text style={styles.iconText}>🎵</Text>
-        </TouchableOpacity>
+        <Text style={styles.topBarTitle}>Novo Post</Text>
+        <View style={{ width: 32 }} /> 
       </View>
 
-      {addingText && (
-        <TextInput
-          autoFocus
-          value={textInput}
-          onChangeText={setTextInput}
-          placeholder="Digite seu texto"
-          placeholderTextColor={colors.textSecondary}
-          style={[styles.inputText, { color: colors.textPrimary, borderColor: colors.textSecondary }]}
-          onSubmitEditing={() => {
-            addElement('text', textInput);
-            setTextInput('');
-            setAddingText(false);
-          }}
-        />
-      )}
+      <ScrollView contentContainerStyle={{ padding: 20 }}>
+        <TouchableOpacity style={styles.pickImagesButton} onPress={pickImages}>
+          <Text style={styles.pickImagesText}>Selecionar Imagens</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.postButton,{backgroundColor: colors.buttonBg}]} onPress={() => {
-        console.log('Story publicado:', { media, elements });
-        navigation.goBack();
-      }}>
-        <Text style={styles.postText}>Publicar</Text>
-      </TouchableOpacity>
+        {selectedImages.length > 0 && (
+          <FlatList
+            data={selectedImages}
+            horizontal
+            keyExtractor={(_, i) => i.toString()}
+            renderItem={renderImage}
+            style={styles.imagesContainer}
+          />
+        )}
+
+        <TextInput
+          value={caption}
+          onChangeText={setCaption}
+          placeholder="Escreva uma legenda..."
+          placeholderTextColor="#888"
+          style={styles.captionInput}
+          multiline
+        />
+
+        <TouchableOpacity
+          style={[styles.publishButton, uploading && { opacity: 0.6 }]}
+          onPress={publishPost}
+          disabled={uploading}
+        >
+          <Text style={styles.publishText}>
+            {uploading ? 'Publicando...' : 'Publicar'}
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000' },
-  background: { width, height, position: 'absolute' },
-  sideMenu: { position: 'absolute', right: 10, top: 60, alignItems:'center' },
-  iconBtn: { marginBottom: 18, backgroundColor: 'rgba(0,0,0,0.4)', width:42,height:42,borderRadius:21,alignItems:'center',justifyContent:'center' },
-  iconText: { color:'#fff', fontSize:18 },
-  postButton: { position:'absolute', bottom:40, alignSelf:'center', paddingHorizontal:28, paddingVertical:12, borderRadius:24 },
-  postText: { color:'#fff', fontWeight:'700', fontSize:16 },
-  center: { flex:1,alignItems:'center',justifyContent:'center' },
-  elementWrapper: { position:'absolute' },
-  storyText: { fontSize:28, fontWeight:'700', textAlign:'center' },
-  inputText: { position:'absolute', bottom:100, left:20, right:20, borderWidth:1, borderRadius:12, padding:10, fontSize:18, backgroundColor:'rgba(0,0,0,0.4)' }
+  container: { flex: 1, backgroundColor: '#fff' },
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 50,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  topBarTitle: { fontSize: 18, fontWeight: '600', color: '#000' },
+  pickImagesButton: {
+    backgroundColor: '#7C4DFF',
+    paddingVertical: 12,
+    borderRadius: 10,
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  pickImagesText: { color: '#fff', fontWeight: '600', fontSize: 16 },
+  imagesContainer: { marginBottom: 20 },
+  previewImage: {
+    width: width / 3,
+    height: width / 3,
+    marginRight: 10,
+    borderRadius: 10,
+  },
+  captionInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 10,
+    padding: 12,
+    fontSize: 16,
+    marginBottom: 30,
+    textAlignVertical: 'top',
+  },
+  publishButton: {
+    backgroundColor: '#7C4DFF',
+    paddingVertical: 14,
+    borderRadius: 30,
+    alignItems: 'center',
+  },
+  publishText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 });

@@ -52,6 +52,7 @@ export default function AppNavigator() {
               <Ionicons name="add" size={34} color="#FFF" />
             </View>
           ),
+          tabBarStyle: { display: 'none'},
         }}
       />
 

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useContext } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { ThemeContext } from '../context/ThemeContext';
+import { ThemeContext } from '../../context/ThemeContext';
 
 export default function Messages({ navigation }) {
   const { colors } = useContext(ThemeContext);
